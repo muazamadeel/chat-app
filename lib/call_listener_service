@@ -1,0 +1,95 @@
+
+import 'dart:async';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_application_11/ringtone_service_final.dart';
+import 'package:flutter_application_11/static_data.dart';
+import 'package:flutter_application_11/incoming_call_screen.dart'; // ✅ Import this
+
+class CallListenerService {
+  static final CallListenerService _instance = CallListenerService._internal();
+  factory CallListenerService() => _instance;
+  CallListenerService._internal();
+
+  StreamSubscription<DocumentSnapshot>? _callSubscription;
+  bool _isCallActive = false;
+  BuildContext? _context;
+
+  void startListening(BuildContext context) {
+    _context = context;
+    
+    if (StaticData.model?.userId == null) {
+      print('⚠️ User not logged in, cannot start call listener');
+      return;
+    }
+
+    print('📞 Starting call listener for user: ${StaticData.model!.userId}');
+
+    _callSubscription = FirebaseFirestore.instance
+        .collection('muazam users')
+        .doc(StaticData.model!.userId)
+        .snapshots()
+        .listen((snapshot) async {
+          if (!snapshot.exists) return;
+
+          final data = snapshot.data()!;
+          final bool callStatus = data['callStatus'] ?? false;
+          final String roomId = data['roomId'] ?? '';
+          final String callType = data['callType'] ?? '';
+          final String callerId = data['callerId'] ?? '';
+
+          print('📊 Call update - Status: $callStatus, Room: $roomId, Type: $callType');
+
+          // ✅ INCOMING CALL DETECTED
+          if (callStatus && roomId.isNotEmpty && callerId.isNotEmpty && !_isCallActive) {
+            print('🔔 INCOMING CALL FROM: $callerId');
+            _isCallActive = true;
+
+            // Get caller info
+            try {
+              final callerDoc = await FirebaseFirestore.instance
+                  .collection('muazam users')
+                  .doc(callerId)
+                  .get();
+
+              final callerName = callerDoc.data()?['name'] ?? 'Unknown';
+
+              // ✅ Navigate to IncomingCallScreen (which plays ringtone)
+              if (_context != null && _context!.mounted) {
+                Navigator.push(
+                  _context!,
+                  MaterialPageRoute(
+                    builder: (context) => IncomingCallScreen(
+                      callerName: callerName,
+                      callerId: callerId,
+                      roomId: roomId,
+                      callType: callType, // 'audio' or 'video'
+                    ),
+                  ),
+                ).then((_) {
+                  // When call screen closes
+                  _isCallActive = false;
+                });
+              }
+            } catch (e) {
+              print('❌ Error getting caller info: $e');
+              _isCallActive = false;
+            }
+          } 
+          // ✅ CALL ENDED
+          else if (!callStatus && _isCallActive) {
+            print('🔴 Call ended');
+            _isCallActive = false;
+          }
+        });
+  }
+
+  void stopListening() {
+    _callSubscription?.cancel();
+    _isCallActive = false;
+  }
+
+  void dispose() {
+    stopListening();
+  }
+}
