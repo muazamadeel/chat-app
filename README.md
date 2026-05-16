@@ -1,7 +1,5 @@
 # ChatBox - Professional Flutter Real-time Chat Application
 
-![ChatBox Banner](screenshots/splash.png)
-
 ## 🚀 Overview
 **ChatBox** is a feature-rich, high-performance real-time messaging application built with Flutter and Firebase. It offers a seamless communication experience with support for multimedia sharing, voice/video calls, and live location tracking, all wrapped in a modern, premium dark-themed UI.
 
