@@ -29,11 +29,13 @@
 - **Maps**: [Google Maps Flutter](https://pub.dev/packages/google_maps_flutter)
 - **Database (Local)**: [SQFlite](https://pub.dev/packages/sqflite)
 
-## 📸 Screenshots
+## 🌐 Live Demo
 
-| Splash Screen | Login Screen | Sign Up Screen |
-| :---: | :---: | :---: |
-| ![Splash](screenshots/splash.png) | ![Login](screenshots/login.png) | ![Sign Up](screenshots/signup.png) |
+Experience the app instantly without installing anything! Try the live emulator here:
+
+👉 **[Launch ChatBox Live Demo](https://appetize.io/embed/b_uebciv3zkvgxtqwzyf4hzmciaq)**
+
+*(Note: The emulator may take a few seconds to boot up. Click "Tap to play" to start.)*
 
 ## ⚙️ Installation & Setup
 
