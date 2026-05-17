@@ -11,6 +11,7 @@ class UserModel {
 
   bool? online;
   Timestamp? lastSeen;
+  String? imageUrl;
 
   // 🔥 CALL FIELDS (NEW)
   String? roomId; // call room
@@ -26,6 +27,7 @@ class UserModel {
     this.userId,
     this.online,
     this.lastSeen,
+    this.imageUrl,
 
     // new
     this.roomId,
@@ -42,6 +44,7 @@ class UserModel {
     String? userId,
     bool? online,
     Timestamp? lastSeen,
+    String? imageUrl,
 
     // new
     String? roomId,
@@ -57,6 +60,7 @@ class UserModel {
       userId: userId ?? this.userId,
       online: online ?? this.online,
       lastSeen: lastSeen ?? this.lastSeen,
+      imageUrl: imageUrl ?? this.imageUrl,
 
       roomId: roomId ?? this.roomId,
       callStatus: callStatus ?? this.callStatus,
@@ -74,6 +78,7 @@ class UserModel {
       'userId': userId,
       'online': online,
       'lastSeen': lastSeen,
+      'imageUrl': imageUrl,
 
       // 🔥 call
       'roomId': roomId,
@@ -92,6 +97,7 @@ class UserModel {
       userId: map['userId'],
       online: map['online'],
       lastSeen: map['lastSeen'],
+      imageUrl: map['imageUrl'],
 
       // 🔥 safe parsing (old users crash nahi honge)
       roomId: map.containsKey('roomId') ? map['roomId'] : null,

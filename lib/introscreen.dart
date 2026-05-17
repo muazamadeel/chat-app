@@ -73,7 +73,7 @@ class _IntroScreenState extends State<IntroScreen> {
                 height: 55,
                 child: TextButton(
                   style: TextButton.styleFrom(
-                    backgroundColor: Colors.deepPurple,
+                    backgroundColor: const Color(0xFF246BFD),
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(15),
@@ -111,7 +111,7 @@ class _IntroScreenState extends State<IntroScreen> {
                         style: const TextStyle(
                           fontWeight: FontWeight.w600,
                           fontSize: 18,
-                          color: Colors.blue,
+                          color: Color(0xFF246BFD),
                         ),
                       ),
                     ),
@@ -121,7 +121,7 @@ class _IntroScreenState extends State<IntroScreen> {
                       effect: const WormEffect(
                         spacing: 10,
                         dotColor: Colors.grey,
-                        activeDotColor: Colors.deepPurple,
+                        activeDotColor: Color(0xFF246BFD),
                       ),
                       onDotClicked: (index) {
                         controller.animateToPage(
@@ -141,7 +141,7 @@ class _IntroScreenState extends State<IntroScreen> {
                         style: const TextStyle(
                           fontWeight: FontWeight.w600,
                           fontSize: 18,
-                          color: Colors.blue,
+                          color: Color(0xFF246BFD),
                         ),
                       ),
                     ),

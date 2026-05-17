@@ -561,7 +561,7 @@ class _ChatScreenState extends State<ChatScreen> {
     );
     bool isEdited = map['isEdited'] == true;
     String status = map['status'] ?? "sent";
-    Color textColor = isMe ? Colors.white : Colors.black87;
+    Color textColor = Colors.black87;
     String messageType = map['type'] ?? "txt";
 
     List deletedFor = map['deletedFor'] is List
@@ -593,32 +593,22 @@ class _ChatScreenState extends State<ChatScreen> {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 14),
           decoration: BoxDecoration(
-            gradient: isMe
-                ? LinearGradient(
-                    colors: [Colors.green.shade400, Colors.green.shade300],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  )
-                : LinearGradient(
-                    colors: [Colors.grey.shade200, Colors.grey.shade300],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
+            color: isMe ? const Color(0xFFB3D4FF) : Colors.white,
             borderRadius: BorderRadius.only(
               topLeft: const Radius.circular(20),
               topRight: const Radius.circular(20),
               bottomLeft: isMe
                   ? const Radius.circular(20)
-                  : const Radius.circular(5),
+                  : const Radius.circular(4),
               bottomRight: isMe
-                  ? const Radius.circular(5)
+                  ? const Radius.circular(4)
                   : const Radius.circular(20),
             ),
-            boxShadow: const [
+            boxShadow: [
               BoxShadow(
-                color: Colors.black12,
-                blurRadius: 4,
-                offset: Offset(2, 2),
+                color: Colors.black.withOpacity(0.04),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
               ),
             ],
           ),
@@ -1086,8 +1076,9 @@ class _ChatScreenState extends State<ChatScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
+      backgroundColor: const Color(0xFFF4F7FC),
       appBar: AppBar(
-        backgroundColor: Colors.blueAccent,
+        backgroundColor: const Color(0xFF246BFD),
         title: Row(
           children: [
             const CircleAvatar(
@@ -1095,13 +1086,15 @@ class _ChatScreenState extends State<ChatScreen> {
               radius: 20,
             ),
             const SizedBox(width: 10),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  widget.profileModel.friendName ?? 'Friend',
-                  style: const TextStyle(fontSize: 18),
-                ),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    widget.profileModel.friendName ?? 'Friend',
+                    style: const TextStyle(fontSize: 18),
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 StreamBuilder<DocumentSnapshot>(
                   stream: FirebaseFirestore.instance
                       .collection('muazam users')
@@ -1122,6 +1115,8 @@ class _ChatScreenState extends State<ChatScreen> {
                           color: Colors.greenAccent,
                           fontSize: 12,
                         ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
                       );
                     } else if (lastSeenTimestamp != null) {
                       final lastSeen = lastSeenTimestamp.toDate();
@@ -1131,6 +1126,8 @@ class _ChatScreenState extends State<ChatScreen> {
                           color: Colors.white70,
                           fontSize: 12,
                         ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
                       );
                     } else {
                       return Text(
@@ -1139,11 +1136,14 @@ class _ChatScreenState extends State<ChatScreen> {
                           color: Colors.white70,
                           fontSize: 12,
                         ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
                       );
                     }
                   },
                 ),
               ],
+            ),
             ),
           ],
         ),
@@ -1281,59 +1281,97 @@ class _ChatScreenState extends State<ChatScreen> {
                         ],
                       ),
                     ),
-                  Row(
-                    children: [
-                      const SizedBox(width: 10),
-                      GestureDetector(
-                        onLongPress: startRecord,
-                        onLongPressUp: stopRecord,
-                        child: Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: isRecording ? Colors.red : Colors.blueAccent,
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.mic,
-                            color: Colors.white,
-                            size: 24,
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black12,
+                          blurRadius: 5,
+                          offset: Offset(0, -1),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        const SizedBox(width: 5),
+                        GestureDetector(
+                          onLongPress: startRecord,
+                          onLongPressUp: stopRecord,
+                          child: Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: isRecording ? Colors.red : const Color(0xFFE9F0FF),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.mic,
+                              color: isRecording ? Colors.white : const Color(0xFF246BFD),
+                              size: 22,
+                            ),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 5),
-                      Expanded(
-                        child: TextField(
-                          controller: msgController,
-                          decoration: InputDecoration(
-                            hintText: l10n.typeMessage,
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 15),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF4F7FC),
+                              borderRadius: BorderRadius.circular(25),
+                            ),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: TextField(
+                                    controller: msgController,
+                                    decoration: InputDecoration(
+                                      hintText: l10n.typeMessage,
+                                      border: InputBorder.none,
+                                    ),
+                                  ),
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.camera_alt, color: Colors.grey),
+                                  onPressed: () {
+                                    setState(() {
+                                      showMediaOptions = !showMediaOptions;
+                                      showFileOptions = false;
+                                    });
+                                  },
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.attach_file, color: Colors.grey),
+                                  onPressed: () {
+                                    setState(() {
+                                      showFileOptions = !showFileOptions;
+                                      showMediaOptions = false;
+                                    });
+                                  },
+                                ),
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 5),
-                      IconButton(
-                        icon: const Icon(Icons.camera_alt),
-                        onPressed: () {
-                          setState(() {
-                            showMediaOptions = !showMediaOptions;
-                            showFileOptions = false;
-                          });
-                        },
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.attach_file),
-                        onPressed: () {
-                          setState(() {
-                            showFileOptions = !showFileOptions;
-                            showMediaOptions = false;
-                          });
-                        },
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.send),
-                        onPressed: () =>
-                            onsendMessage(msgController.text, "txt"),
-                      ),
-                    ],
+                        const SizedBox(width: 8),
+                        GestureDetector(
+                          onTap: () => onsendMessage(msgController.text, "txt"),
+                          child: Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: const BoxDecoration(
+                              color: Color(0xFF246BFD),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.send,
+                              color: Colors.white,
+                              size: 20,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 5),
+                      ],
+                    ),
                   ),
                 ],
               ),

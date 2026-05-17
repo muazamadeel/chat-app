@@ -107,139 +107,188 @@ class _MycontactsState extends State<Mycontacts> {
     final height = MediaQuery.of(context).size.height;
     final width = MediaQuery.of(context).size.width;
 
-    return SafeArea(
-      child: Scaffold(
-        body: Stack(
+    return Scaffold(
+      backgroundColor: const Color(0xFF246BFD),
+      body: SafeArea(
+        child: Column(
           children: [
-            Container(width: width, height: height, color: Colors.black),
-            Positioned(
-              bottom: 0,
+            // Top Bar
+            Padding(
+              padding: const EdgeInsets.only(top: 10, left: 20, right: 20, bottom: 20),
+              child: Row(
+                children: [
+                  const SizedBox(width: 40), // Placeholder for centering
+                  Expanded(
+                    child: Center(
+                      child: Text(
+                        l10n.requests,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const Icon(Icons.person_add_alt_1, color: Colors.white, size: 28),
+                ],
+              ),
+            ),
+            
+            // Main White Container
+            Expanded(
               child: Container(
-                height: height * 0.7,
                 width: width,
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.only(
                     topLeft: Radius.circular(30),
                     topRight: Radius.circular(30),
                   ),
                 ),
-              ),
-            ),
-            Positioned(
-              top: 20,
-              left: 30,
-              right: 30,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Container(
-                    width: 50,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.white38),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      Icons.search_rounded,
-                      color: Colors.white,
-                      size: 30,
-                    ),
-                  ),
-                  Text(
-                    l10n.requests,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Container(
-                    width: 50,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white),
-                    ),
-                    child: Icon(Icons.contacts, color: Colors.white),
-                  ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(top: 190.0, left: 30),
-              child: Text(
-                l10n.friendRequests,
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(top: 200.0),
-              child: SizedBox(
-                width: width,
-                child: ListView.builder(
-                  itemCount: allRequests.length,
-                  scrollDirection: Axis.vertical,
-                  itemBuilder: (context, index) {
-                    // ignore: unused_local_variable
-                    var req = allRequests[index];
-                    return Padding(
-                      padding: const EdgeInsets.only(
-                        top: 20.0,
-                        left: 20,
-                        right: 20,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(top: 30.0, left: 25, bottom: 10),
+                      child: Text(
+                        l10n.friendRequests,
+                        style: const TextStyle(
+                          color: Colors.black87,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            height: 60,
-                            width: 80,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              //   image: DecorationImage(
-                              //     image: NetworkImage(req["sender image"] ??
-                              //         "https://via.placeholder.com/150"),
-                              //   ),
-                            ),
-                          ),
-                          SizedBox(width: 30),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                allRequests[index].senderName!,
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                    ),
+                    Expanded(
+                      child: allRequests.isEmpty
+                          ? Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.inbox_rounded, size: 80, color: Colors.grey.shade300),
+                                  const SizedBox(height: 15),
+                                  Text(
+                                    "No new requests",
+                                    style: TextStyle(color: Colors.grey.shade500, fontSize: 16),
+                                  )
+                                ],
                               ),
-                            ],
-                          ),
-                          Spacer(),
-                          IconButton(
-                            icon: Icon(Icons.check_circle),
-                            onPressed: () {
-                              acceptRequest(index);
-                            },
-                          ),
-                          Spacer(),
-                          IconButton(
-                            icon: Icon(Icons.cancel, color: Colors.red),
-                            onPressed: () {
-                              rejectRequest(index);
-                            },
-                          ),
-                        ],
-                      ),
-                    );
-                  },
+                            )
+                          : ListView.builder(
+                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                              itemCount: allRequests.length,
+                              itemBuilder: (context, index) {
+                                var req = allRequests[index];
+                                return Container(
+                                  margin: const EdgeInsets.only(bottom: 15),
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(16),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.04),
+                                        blurRadius: 10,
+                                        offset: const Offset(0, 4),
+                                      ),
+                                    ],
+                                    border: Border.all(color: Colors.grey.shade100),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      // Dynamically fetch profile picture of the sender
+                                      FutureBuilder<DocumentSnapshot>(
+                                        future: FirebaseFirestore.instance
+                                            .collection("muazam users")
+                                            .doc(req.senderId)
+                                            .get(),
+                                        builder: (context, snapshot) {
+                                          if (snapshot.connectionState == ConnectionState.waiting) {
+                                            return CircleAvatar(
+                                              radius: 28,
+                                              backgroundColor: Colors.grey.shade200,
+                                              child: const CircularProgressIndicator(strokeWidth: 2),
+                                            );
+                                          }
+                                          if (snapshot.hasData && snapshot.data != null) {
+                                            var data = snapshot.data!.data() as Map<String, dynamic>?;
+                                            if (data != null && data.containsKey("imageUrl") && data["imageUrl"].isNotEmpty) {
+                                              return CircleAvatar(
+                                                radius: 28,
+                                                backgroundColor: Colors.grey.shade200,
+                                                backgroundImage: NetworkImage(data["imageUrl"]),
+                                              );
+                                            }
+                                          }
+                                          return CircleAvatar(
+                                            radius: 28,
+                                            backgroundColor: const Color(0xFFE9F0FF),
+                                            child: const Icon(Icons.person, color: Color(0xFF246BFD), size: 30),
+                                          );
+                                        },
+                                      ),
+                                      const SizedBox(width: 15),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              req.senderName ?? "Unknown User",
+                                              style: const TextStyle(
+                                                color: Colors.black87,
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              "Wants to be your friend",
+                                              style: TextStyle(
+                                                color: Colors.grey.shade500,
+                                                fontSize: 12,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      // Actions
+                                      Row(
+                                        children: [
+                                          GestureDetector(
+                                            onTap: () => acceptRequest(index),
+                                            child: Container(
+                                              padding: const EdgeInsets.all(8),
+                                              decoration: BoxDecoration(
+                                                color: const Color(0xFF246BFD).withOpacity(0.1),
+                                                shape: BoxShape.circle,
+                                              ),
+                                              child: const Icon(Icons.check_rounded, color: Color(0xFF246BFD), size: 24),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 10),
+                                          GestureDetector(
+                                            onTap: () => rejectRequest(index),
+                                            child: Container(
+                                              padding: const EdgeInsets.all(8),
+                                              decoration: BoxDecoration(
+                                                color: Colors.red.shade50,
+                                                shape: BoxShape.circle,
+                                              ),
+                                              child: Icon(Icons.close_rounded, color: Colors.red.shade400, size: 24),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            ),
+                    ),
+                  ],
                 ),
               ),
             ),

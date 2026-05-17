@@ -96,8 +96,11 @@
 //     );
 //   }
 // }
+import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:flutter_application_11/static_data.dart';
 import 'package:flutter_application_11/l10n/app_localizations.dart';
 
@@ -108,390 +111,381 @@ class Editprofile extends StatefulWidget {
   State<Editprofile> createState() => _EditprofileState();
 }
 
-class _EditprofileState extends State<Editprofile>
-    with SingleTickerProviderStateMixin {
+class _EditprofileState extends State<Editprofile> {
   final TextEditingController NameController = TextEditingController();
   final TextEditingController numberController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
 
-  static const _bg = Color(0xFF080808);
-  static const _card = Color(0xFF161616);
-  static const _gold = Color(0xFFD4AF37);
-  static const _goldLight = Color(0xFFF5E070);
-  static const _goldDark = Color(0xFFB8860B);
-  static const _fieldBg = Color(0xFF1E1E1E);
+  static const _primaryBlue = Color(0xFF246BFD);
+  static const _bg = Color(0xFFF4F7FC);
+  static const _fieldBg = Colors.white;
 
-  AnimationController? _shimmer;
+  File? _imageFile;
+  bool _isUploading = false;
+  final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
     super.initState();
-    NameController.text = StaticData.model!.name!;
-    numberController.text = StaticData.model!.number!;
-    emailController.text = StaticData.model!.email!;
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      _shimmer = AnimationController(
-        vsync: this,
-        duration: const Duration(milliseconds: 1600),
-      )..repeat();
-      setState(() {});
-    });
+    NameController.text = StaticData.model!.name ?? '';
+    numberController.text = StaticData.model!.number ?? '';
+    emailController.text = StaticData.model!.email ?? '';
   }
 
   @override
   void dispose() {
-    _shimmer?.dispose();
     NameController.dispose();
     numberController.dispose();
     emailController.dispose();
     super.dispose();
   }
 
-  // ── Functionality unchanged ──────────────────────────────────
-  void update() async {
-    final l10n = AppLocalizations.of(context)!;
-    DocumentReference documentReference = FirebaseFirestore.instance
-        .collection("muazam users")
-        .doc(StaticData.model!.userId);
-
-    Map<String, dynamic> updatedetails = {
-      "name": NameController.text,
-      "number": numberController.text,
-      "email": emailController.text,
-    };
-
-    await documentReference
-        .set(updatedetails, SetOptions(merge: true))
-        .then((value) {
-          print("Data has been updated");
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(l10n.accountCreated),
-              backgroundColor: Colors.green.shade600,
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              margin: const EdgeInsets.all(16),
-            ),
-          );
-        })
-        .onError((error, stackTrace) {
-          print(error.toString());
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(l10n.somethingWentWrong),
-              backgroundColor: Colors.redAccent,
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              margin: const EdgeInsets.all(16),
-            ),
-          );
+  Future<void> _pickImage(ImageSource source) async {
+    try {
+      final pickedFile = await _picker.pickImage(source: source);
+      if (pickedFile != null) {
+        setState(() {
+          _imageFile = File(pickedFile.path);
         });
+      }
+    } catch (e) {
+      debugPrint("Image picker error: $e");
+    }
+  }
+
+  void _showImageSourceDialog() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => SafeArea(
+        child: Wrap(
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_library, color: _primaryBlue),
+              title: const Text('Pick from Gallery'),
+              onTap: () {
+                Navigator.of(context).pop();
+                _pickImage(ImageSource.gallery);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.camera_alt, color: _primaryBlue),
+              title: const Text('Take a Photo'),
+              onTap: () {
+                Navigator.of(context).pop();
+                _pickImage(ImageSource.camera);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  ImageProvider _getProfileImage() {
+    if (_imageFile != null) {
+      return FileImage(_imageFile!);
+    } else if (StaticData.model!.imageUrl != null && StaticData.model!.imageUrl!.isNotEmpty) {
+      return NetworkImage(StaticData.model!.imageUrl!);
+    } else {
+      return const AssetImage('images/person2.jpeg');
+    }
+  }
+
+  void update() async {
+    setState(() {
+      _isUploading = true;
+    });
+
+    final l10n = AppLocalizations.of(context)!;
+    String? finalImageUrl = StaticData.model!.imageUrl;
+
+    try {
+      if (_imageFile != null) {
+        String fileName = 'profile_images/${StaticData.model!.userId}.jpg';
+        Reference ref = FirebaseStorage.instance.ref().child(fileName);
+        UploadTask uploadTask = ref.putFile(_imageFile!);
+        TaskSnapshot snapshot = await uploadTask;
+        finalImageUrl = await snapshot.ref.getDownloadURL();
+      }
+
+      DocumentReference documentReference = FirebaseFirestore.instance
+          .collection("muazam users")
+          .doc(StaticData.model!.userId);
+
+      Map<String, dynamic> updatedetails = {
+        "name": NameController.text,
+        "number": numberController.text,
+        "email": emailController.text,
+      };
+
+      if (finalImageUrl != null) {
+        updatedetails["imageUrl"] = finalImageUrl;
+      }
+
+      await documentReference.set(updatedetails, SetOptions(merge: true));
+      
+      StaticData.model!.name = NameController.text;
+      StaticData.model!.number = numberController.text;
+      StaticData.model!.email = emailController.text;
+      if (finalImageUrl != null) {
+        StaticData.model!.imageUrl = finalImageUrl;
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text("Profile Updated Successfully!"),
+            backgroundColor: _primaryBlue,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            margin: const EdgeInsets.all(16),
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint("Update Error: $e");
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Error: ${e.toString()}"),
+            backgroundColor: Colors.redAccent,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            margin: const EdgeInsets.all(16),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isUploading = false;
+        });
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final size = MediaQuery.of(context).size;
 
     return Scaffold(
-      resizeToAvoidBottomInset: true,
       backgroundColor: _bg,
-      body: Stack(
-        children: [
-          // Background glows
-          Positioned(
-            top: -100,
-            left: -80,
-            child: _glow(300, const Color(0x12D4AF37)),
+      appBar: AppBar(
+        backgroundColor: _primaryBlue,
+        elevation: 0,
+        centerTitle: true,
+        iconTheme: const IconThemeData(color: Colors.white),
+        title: Text(
+          l10n.editProfile,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
           ),
-          Positioned(
-            bottom: 60,
-            right: -80,
-            child: _glow(240, const Color(0x09D4AF37)),
-          ),
-
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
+        ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.only(bottom: 30, top: 20),
+              decoration: const BoxDecoration(
+                color: _primaryBlue,
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(30),
+                  bottomRight: Radius.circular(30),
+                ),
+              ),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SizedBox(height: size.height * 0.015),
-
-                  // Top bar
-                  Row(
-                    children: [
-                      GestureDetector(
-                        onTap: () => Navigator.pop(context),
-                        child: Container(
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: _card,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: _gold.withOpacity(0.25)),
-                          ),
-                          child: const Icon(
-                            Icons.arrow_back_ios_new,
-                            color: _gold,
-                            size: 16,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 14),
-                      Text(
-                        l10n.editProfile,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 0.4,
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  SizedBox(height: size.height * 0.03),
-
-                  // Avatar
-                  Center(
-                    child: Column(
+                  GestureDetector(
+                    onTap: _showImageSourceDialog,
+                    child: Stack(
+                      alignment: Alignment.bottomRight,
                       children: [
                         Container(
-                          width: 80,
-                          height: 80,
+                          width: 100,
+                          height: 100,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: _card,
-                            border: Border.all(
-                              color: _gold.withOpacity(0.3),
-                              width: 1.5,
-                            ),
+                            color: Colors.white,
+                            border: Border.all(color: Colors.white, width: 3),
                             boxShadow: [
                               BoxShadow(
-                                color: _gold.withOpacity(0.14),
-                                blurRadius: 20,
-                                spreadRadius: 2,
+                                color: Colors.black.withOpacity(0.1),
+                                blurRadius: 10,
+                                offset: const Offset(0, 5),
                               ),
                             ],
-                          ),
-                          child: const Icon(
-                            Icons.person_rounded,
-                            color: _gold,
-                            size: 38,
+                            image: DecorationImage(
+                              image: _getProfileImage(),
+                              fit: BoxFit.cover,
+                            ),
                           ),
                         ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'YOUR PROFILE',
-                          style: TextStyle(
-                            color: _gold.withOpacity(0.55),
-                            fontSize: 10,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: 0.8,
+                        Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: const BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: const BoxDecoration(
+                              color: _primaryBlue,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.camera_alt,
+                              color: Colors.white,
+                              size: 16,
+                            ),
                           ),
                         ),
                       ],
                     ),
                   ),
-
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 20),
-                    child: _goldDivider(),
+                  const SizedBox(height: 15),
+                  Text(
+                    StaticData.model!.name ?? 'User',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-
-                  // Fields
-                  _field(
-                    controller: NameController,
-                    hint: l10n.name,
-                    label: 'NAME',
-                    icon: Icons.person_outline_rounded,
-                    keyboard: TextInputType.name,
+                  Text(
+                    StaticData.model!.email ?? '',
+                    style: const TextStyle(
+                      color: Colors.white70,
+                      fontSize: 14,
+                    ),
                   ),
-                  const SizedBox(height: 14),
-                  _field(
-                    controller: numberController,
-                    hint: l10n.number,
-                    label: 'PHONE NUMBER',
-                    icon: Icons.phone_outlined,
-                    keyboard: TextInputType.phone,
-                  ),
-                  const SizedBox(height: 14),
-                  _field(
-                    controller: emailController,
-                    hint: l10n.email,
-                    label: 'EMAIL',
-                    icon: Icons.alternate_email_rounded,
-                    keyboard: TextInputType.emailAddress,
-                  ),
-
-                  const Spacer(),
-
-                  // Shimmer button
-                  _shimmerButton(l10n),
-                  SizedBox(height: size.height * 0.03),
                 ],
               ),
             ),
-          ),
-        ],
+            Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    "Personal Information",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  _buildField(
+                    controller: NameController,
+                    hint: l10n.name,
+                    icon: Icons.person_outline,
+                    keyboard: TextInputType.name,
+                  ),
+                  const SizedBox(height: 16),
+                  _buildField(
+                    controller: numberController,
+                    hint: l10n.number,
+                    icon: Icons.phone_outlined,
+                    keyboard: TextInputType.phone,
+                  ),
+                  const SizedBox(height: 16),
+                  _buildField(
+                    controller: emailController,
+                    hint: l10n.email,
+                    icon: Icons.email_outlined,
+                    keyboard: TextInputType.emailAddress,
+                  ),
+                  const SizedBox(height: 40),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 55,
+                    child: ElevatedButton(
+                      onPressed: _isUploading ? null : update,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: _primaryBlue,
+                        elevation: 2,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                        disabledBackgroundColor: _primaryBlue.withOpacity(0.6),
+                      ),
+                      child: _isUploading
+                          ? const SizedBox(
+                              height: 24,
+                              width: 24,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2.5,
+                              ),
+                            )
+                          : Text(
+                              l10n.editProfile.toUpperCase(),
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                                letterSpacing: 1.2,
+                              ),
+                            ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  // ── Helpers ──────────────────────────────────────────────────
-
-  Widget _glow(double size, Color color) => Container(
-    width: size,
-    height: size,
-    decoration: BoxDecoration(
-      shape: BoxShape.circle,
-      gradient: RadialGradient(colors: [color, Colors.transparent]),
-    ),
-  );
-
-  Widget _goldDivider() => Container(
-    height: 1,
-    decoration: BoxDecoration(
-      gradient: LinearGradient(
-        colors: [
-          _gold.withOpacity(0),
-          _gold.withOpacity(0.55),
-          _gold.withOpacity(0),
-        ],
-      ),
-    ),
-  );
-
-  Widget _field({
+  Widget _buildField({
     required TextEditingController controller,
     required String hint,
-    required String label,
     required IconData icon,
     TextInputType? keyboard,
   }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(left: 4, bottom: 6),
-          child: Text(
-            label,
-            style: TextStyle(
-              color: _gold.withOpacity(0.7),
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              letterSpacing: 0.8,
-            ),
-          ),
-        ),
-        TextField(
-          controller: controller,
-          keyboardType: keyboard,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 14.5,
-            letterSpacing: 0.3,
-          ),
-          decoration: InputDecoration(
-            hintText: hint,
-            hintStyle: TextStyle(
-              color: Colors.white.withOpacity(0.2),
-              fontSize: 13,
-            ),
-            prefixIcon: Icon(icon, color: _gold.withOpacity(0.75), size: 19),
-            filled: true,
-            fillColor: _fieldBg,
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 14,
-            ),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: BorderSide(color: Colors.white.withOpacity(0.06)),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: BorderSide(color: Colors.white.withOpacity(0.06)),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(color: _gold, width: 1.4),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _shimmerButton(AppLocalizations l10n) {
-    if (_shimmer == null) {
-      return _btnContainer(
-        gradient: const LinearGradient(
-          colors: [_goldDark, _gold, _goldLight, _gold, _goldDark],
-          stops: [0.0, 0.25, 0.5, 0.75, 1.0],
-        ),
-        l10n: l10n,
-      );
-    }
-    return AnimatedBuilder(
-      animation: _shimmer!,
-      builder: (context, _) {
-        final t = _shimmer!.value;
-        return _btnContainer(
-          gradient: LinearGradient(
-            begin: Alignment(-1.0 + t * 2.5, 0),
-            end: Alignment(0.6 + t * 2.5, 0),
-            colors: const [_goldDark, _gold, _goldLight, _gold, _goldDark],
-            stops: const [0.0, 0.35, 0.5, 0.65, 1.0],
-          ),
-          l10n: l10n,
-        );
-      },
-    );
-  }
-
-  Widget _btnContainer({
-    required LinearGradient gradient,
-    required AppLocalizations l10n,
-  }) {
     return Container(
-      width: double.infinity,
-      height: 52,
       decoration: BoxDecoration(
+        color: _fieldBg,
         borderRadius: BorderRadius.circular(16),
-        gradient: gradient,
         boxShadow: [
           BoxShadow(
-            color: _gold.withOpacity(0.35),
-            blurRadius: 20,
-            offset: const Offset(0, 7),
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
-      child: ElevatedButton(
-        onPressed: update,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.transparent,
-          shadowColor: Colors.transparent,
-          shape: RoundedRectangleBorder(
+      child: TextField(
+        controller: controller,
+        keyboardType: keyboard,
+        style: const TextStyle(fontSize: 15, color: Colors.black87),
+        decoration: InputDecoration(
+          hintText: hint,
+          hintStyle: TextStyle(color: Colors.grey.shade400),
+          prefixIcon: Icon(icon, color: _primaryBlue.withOpacity(0.7), size: 22),
+          border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide.none,
           ),
-        ),
-        child: Text(
-          l10n.editProfile.toUpperCase(),
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w800,
-            color: Colors.black,
-            letterSpacing: 1.4,
-          ),
+          filled: true,
+          fillColor: Colors.transparent,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         ),
       ),
     );

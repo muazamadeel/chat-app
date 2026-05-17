@@ -93,41 +93,47 @@ class _MySplashState extends State<MySplash>
 
   @override
   Widget build(BuildContext context) {
-    final height = MediaQuery.of(context).size.height;
-    final width = MediaQuery.of(context).size.width;
-
     return Scaffold(
-      body: SafeArea(
-        child: Center(
-          child: ScaleTransition(
-            scale: animation,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  height: height * 0.12,
-                  width: width * 0.6,
-                  decoration: const BoxDecoration(
-                    image: DecorationImage(
-                      image: AssetImage(
-                        "images/WhatsApp Image 2026-02-11 at 7.23.42 PM.jpeg",
-                      ),
-                      fit: BoxFit.contain,
-                    ),
-                  ),
+      backgroundColor: const Color(0xFF246BFD),
+      body: Center(
+        child: ScaleTransition(
+          scale: animation,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 100,
+                height: 100,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.15),
+                  shape: BoxShape.circle,
                 ),
-                const SizedBox(height: 10),
-                const Text(
-                  "Chatbox",
-                  style: TextStyle(
-                    fontSize: 21,
-                    fontWeight: FontWeight.bold,
-                    color: Color.fromARGB(255, 22, 22, 22),
-                    fontStyle: FontStyle.italic,
-                  ),
+                child: const Icon(
+                  Icons.chat_bubble_rounded,
+                  color: Colors.white,
+                  size: 52,
                 ),
-              ],
-            ),
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                "Chatbox",
+                style: TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  letterSpacing: 1.2,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                "Connect. Chat. Share.",
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.white.withOpacity(0.7),
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ],
           ),
         ),
       ),

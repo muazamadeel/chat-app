@@ -1,164 +1,3 @@
-// import 'package:cloud_firestore/cloud_firestore.dart';
-// import 'package:flutter/material.dart';
-// import 'package:flutter_application_11/pageview.dart';
-// import 'package:flutter_application_11/passwordencryption.dart';
-// import 'package:flutter_application_11/static_data.dart';
-// import 'package:flutter_application_11/user_model.dart';
-// import 'package:shared_preferences/shared_preferences.dart';
-// import 'package:uuid/uuid.dart';
-
-// class MyCreateAccount extends StatefulWidget {
-//   const MyCreateAccount({super.key});
-
-//   @override
-//   State<MyCreateAccount> createState() => _MyCreateAccountState();
-// }
-
-// class _MyCreateAccountState extends State<MyCreateAccount> {
-//   TextEditingController emailController = TextEditingController();
-//   TextEditingController passwordController = TextEditingController();
-//   TextEditingController numberController = TextEditingController();
-//   TextEditingController nameController = TextEditingController();
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       backgroundColor: Colors.grey[100],
-//       appBar: AppBar(
-//         title: const Text('Create Account'),
-//         centerTitle: true,
-//         backgroundColor: Colors.teal,
-//       ),
-//       body: Center(
-//         child: SingleChildScrollView(
-//           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-//           child: Card(
-//             elevation: 8,
-//             shape: RoundedRectangleBorder(
-//               borderRadius: BorderRadius.circular(16),
-//             ),
-//             child: Padding(
-//               padding: const EdgeInsets.all(20.0),
-//               child: Column(
-//                 children: [
-//                   const Text(
-//                     'Welcome!',
-//                     style: TextStyle(
-//                       fontSize: 24,
-//                       fontWeight: FontWeight.bold,
-//                       color: Colors.teal,
-//                     ),
-//                   ),
-//                   const SizedBox(height: 16),
-//                   _buildTextField(nameController, 'Name', Icons.person),
-//                   const SizedBox(height: 12),
-//                   _buildTextField(emailController, 'Email', Icons.email),
-//                   const SizedBox(height: 12),
-//                   _buildTextField(numberController, 'Number', Icons.phone),
-//                   const SizedBox(height: 12),
-//                   _buildTextField(
-//                     passwordController,
-//                     'Password',
-//                     Icons.lock,
-//                     obscureText: true,
-//                   ),
-//                   const SizedBox(height: 20),
-//                   SizedBox(
-//                     width: double.infinity,
-//                     child: ElevatedButton(
-//                       onPressed: _createAccount,
-//                       style: ElevatedButton.styleFrom(
-//                         backgroundColor: Colors.teal,
-//                         padding: const EdgeInsets.symmetric(vertical: 14),
-//                         shape: RoundedRectangleBorder(
-//                           borderRadius: BorderRadius.circular(12),
-//                         ),
-//                       ),
-//                       child: const Text(
-//                         'Create Account',
-//                         style: TextStyle(fontSize: 18, color: Colors.black),
-//                       ),
-//                     ),
-//                   ),
-//                 ],
-//               ),
-//             ),
-//           ),
-//         ),
-//       ),
-//     );
-//   }
-
-//   Widget _buildTextField(
-//     TextEditingController controller,
-//     String hintText,
-//     IconData icon, {
-//     bool obscureText = false,
-//   }) {
-//     return TextField(
-//       controller: controller,
-//       obscureText: obscureText,
-//       decoration: InputDecoration(
-//         prefixIcon: Icon(icon, color: Colors.teal),
-//         hintText: hintText,
-//         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-//         filled: true,
-//         fillColor: Colors.grey[200],
-//       ),
-//     );
-//   }
-
-//   Future<void> _createAccount() async {
-//     final email = emailController.text.trim();
-
-//     // 1️⃣ Check if email already exists
-//     final checkEmail = await FirebaseFirestore.instance
-//         .collection("muazam users")
-//         .where("email", isEqualTo: email)
-//         .get();
-
-//     if (checkEmail.docs.isNotEmpty) {
-//       ScaffoldMessenger.of(context).showSnackBar(
-//         const SnackBar(content: Text("This email is already registered")),
-//       );
-//       return;
-//     }
-
-//     // 2️⃣ Create account
-//     var uid = Uuid();
-//     String userId = uid.v4();
-//     String hashedPassword = EncryptionService().hashPassword(
-//       passwordController.text.trim(),
-//     );
-
-//     UserModel model = UserModel(
-//       email: email,
-//       name: nameController.text.trim(),
-//       number: numberController.text.trim(),
-//       password: hashedPassword,
-//       userId: userId,
-//     );
-
-//     await FirebaseFirestore.instance
-//         .collection("muazam users")
-//         .doc(userId)
-//         .set(model.toMap());
-
-//     ScaffoldMessenger.of(context).showSnackBar(
-//       const SnackBar(content: Text("Account created successfully")),
-//     );
-//     StaticData.model = model;
-
-//     // Shared Preferences me save karo
-//     final prefs = await SharedPreferences.getInstance();
-//     await prefs.setString('userId', userId);
-
-//     // Navigate to PageView
-//     Navigator.of(context).pushReplacement(
-//       MaterialPageRoute(builder: (context) => const MyPageview()),
-//     );
-//   }
-// }
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_11/l10n/app_localizations.dart';
@@ -176,8 +15,7 @@ class MyCreateAccount extends StatefulWidget {
   State<MyCreateAccount> createState() => _MyCreateAccountState();
 }
 
-class _MyCreateAccountState extends State<MyCreateAccount>
-    with SingleTickerProviderStateMixin {
+class _MyCreateAccountState extends State<MyCreateAccount> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   final numberController = TextEditingController();
@@ -186,33 +24,10 @@ class _MyCreateAccountState extends State<MyCreateAccount>
   bool _passwordVisible = false;
   bool _isLoading = false;
 
-  static const _bg = Color(0xFF080808);
-  static const _card = Color(0xFF161616);
-  static const _gold = Color(0xFFD4AF37);
-  static const _goldLight = Color(0xFFF5E070);
-  static const _goldDark = Color(0xFFB8860B);
-  static const _fieldBg = Color(0xFF1E1E1E);
-
-  // nullable — initialized in initState, no LateError possible
-  AnimationController? _shimmer;
-
-  @override
-  void initState() {
-    super.initState();
-    // addPostFrameCallback ensures vsync is ready
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      _shimmer = AnimationController(
-        vsync: this,
-        duration: const Duration(milliseconds: 1600),
-      )..repeat();
-      setState(() {});
-    });
-  }
+  static const _primary = Color(0xFF246BFD);
 
   @override
   void dispose() {
-    _shimmer?.dispose();
     emailController.dispose();
     passwordController.dispose();
     numberController.dispose();
@@ -226,205 +41,172 @@ class _MyCreateAccountState extends State<MyCreateAccount>
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
-      resizeToAvoidBottomInset: false,
-      backgroundColor: _bg,
-      body: Stack(
-        children: [
-          Positioned(
-            top: -90,
-            right: -70,
-            child: _glow(280, const Color(0x14D4AF37)),
-          ),
-          Positioned(
-            bottom: 80,
-            left: -90,
-            child: _glow(240, const Color(0x09D4AF37)),
-          ),
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+      backgroundColor: _primary,
+      resizeToAvoidBottomInset: true,
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Top Blue Header
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              child: Row(
                 children: [
-                  SizedBox(height: size.height * 0.035),
-
-                  _buildHeader(l10n),
-
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 18),
-                    child: _goldDivider(),
-                  ),
-
-                  Center(child: _avatar()),
-                  SizedBox(height: size.height * 0.025),
-
-                  _field(
-                    nameController,
-                    l10n.name,
-                    'Full Name',
-                    Icons.person_outline_rounded,
-                  ),
-                  const SizedBox(height: 12),
-                  _field(
-                    emailController,
-                    l10n.email,
-                    'Email',
-                    Icons.alternate_email_rounded,
-                    keyboard: TextInputType.emailAddress,
-                  ),
-                  const SizedBox(height: 12),
-                  _field(
-                    numberController,
-                    l10n.number,
-                    'Phone',
-                    Icons.phone_iphone_rounded,
-                    keyboard: TextInputType.phone,
-                  ),
-                  const SizedBox(height: 12),
-                  _field(
-                    passwordController,
-                    l10n.password,
-                    'Password',
-                    Icons.lock_outline_rounded,
-                    obscure: !_passwordVisible,
-                    suffix: IconButton(
-                      icon: Icon(
-                        _passwordVisible
-                            ? Icons.visibility_off_outlined
-                            : Icons.visibility_outlined,
-                        color: _gold.withOpacity(0.7),
-                        size: 20,
+                  GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Container(
+                      width: 42,
+                      height: 42,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                      onPressed: () =>
-                          setState(() => _passwordVisible = !_passwordVisible),
+                      child: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 16),
                     ),
                   ),
-
-                  const Spacer(),
-
-                  _shimmerButton(l10n),
-
-                  SizedBox(height: size.height * 0.022),
-
-                  Center(
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          l10n.alreadyHaveAccount,
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.38),
-                            fontSize: 13,
-                          ),
+                  const SizedBox(width: 16),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        l10n.createAccountTitle,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
                         ),
-                        const SizedBox(width: 4),
-                        GestureDetector(
-                          onTap: () => Navigator.pop(context),
-                          child: const Text(
-                            'Login',
-                            style: TextStyle(
-                              color: _gold,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
+                      ),
+                      Text(
+                        l10n.welcome,
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.7),
+                          fontSize: 13,
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-
-                  SizedBox(height: size.height * 0.03),
                 ],
               ),
             ),
-          ),
-        ],
+
+            // White Rounded Container
+            Expanded(
+              child: Container(
+                width: double.infinity,
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(30),
+                    topRight: Radius.circular(30),
+                  ),
+                ),
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 30),
+                  child: Column(
+                    children: [
+                      // Avatar
+                      Container(
+                        width: 72,
+                        height: 72,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: _primary.withOpacity(0.08),
+                          border: Border.all(color: _primary.withOpacity(0.3), width: 1.5),
+                        ),
+                        child: const Icon(Icons.person_rounded, color: _primary, size: 36),
+                      ),
+                      const SizedBox(height: 24),
+
+                      _field(nameController, l10n.name, 'FULL NAME', Icons.person_outline_rounded),
+                      const SizedBox(height: 14),
+                      _field(emailController, l10n.email, 'EMAIL', Icons.alternate_email_rounded,
+                          keyboard: TextInputType.emailAddress),
+                      const SizedBox(height: 14),
+                      _field(numberController, l10n.number, 'PHONE', Icons.phone_iphone_rounded,
+                          keyboard: TextInputType.phone),
+                      const SizedBox(height: 14),
+                      _field(
+                        passwordController,
+                        l10n.password,
+                        'PASSWORD',
+                        Icons.lock_outline_rounded,
+                        obscure: !_passwordVisible,
+                        suffix: IconButton(
+                          icon: Icon(
+                            _passwordVisible ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                            color: _primary.withOpacity(0.6),
+                            size: 20,
+                          ),
+                          onPressed: () => setState(() => _passwordVisible = !_passwordVisible),
+                        ),
+                      ),
+
+                      const SizedBox(height: 28),
+
+                      // Create Account Button
+                      SizedBox(
+                        width: double.infinity,
+                        height: 54,
+                        child: ElevatedButton(
+                          onPressed: _isLoading ? null : () => _createAccount(l10n),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: _primary,
+                            disabledBackgroundColor: _primary.withOpacity(0.5),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                            elevation: 4,
+                            shadowColor: _primary.withOpacity(0.4),
+                          ),
+                          child: _isLoading
+                              ? const SizedBox(
+                                  height: 22,
+                                  width: 22,
+                                  child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5),
+                                )
+                              : Text(
+                                  l10n.createAccountBtn,
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 24),
+
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            l10n.alreadyHaveAccount,
+                            style: TextStyle(color: Colors.grey.shade500, fontSize: 14),
+                          ),
+                          const SizedBox(width: 4),
+                          GestureDetector(
+                            onTap: () => Navigator.pop(context),
+                            child: const Text(
+                              'Login',
+                              style: TextStyle(
+                                color: _primary,
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: size.height * 0.02),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
-
-  // ── Helpers ──────────────────────────────────────────────────
-
-  Widget _glow(double size, Color color) => Container(
-    width: size,
-    height: size,
-    decoration: BoxDecoration(
-      shape: BoxShape.circle,
-      gradient: RadialGradient(colors: [color, Colors.transparent]),
-    ),
-  );
-
-  Widget _buildHeader(AppLocalizations l10n) => Row(
-    children: [
-      GestureDetector(
-        onTap: () => Navigator.pop(context),
-        child: Container(
-          width: 42,
-          height: 42,
-          decoration: BoxDecoration(
-            color: _card,
-            borderRadius: BorderRadius.circular(13),
-            border: Border.all(color: _gold.withOpacity(0.28)),
-          ),
-          child: const Icon(Icons.arrow_back_ios_new, color: _gold, size: 15),
-        ),
-      ),
-      const SizedBox(width: 16),
-      Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            l10n.createAccountTitle,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 22,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 0.4,
-            ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            l10n.welcome,
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.35),
-              fontSize: 12,
-            ),
-          ),
-        ],
-      ),
-    ],
-  );
-
-  Widget _goldDivider() => Container(
-    height: 1,
-    decoration: BoxDecoration(
-      gradient: LinearGradient(
-        colors: [
-          _gold.withOpacity(0),
-          _gold.withOpacity(0.55),
-          _gold.withOpacity(0),
-        ],
-      ),
-    ),
-  );
-
-  Widget _avatar() => Container(
-    width: 72,
-    height: 72,
-    decoration: BoxDecoration(
-      shape: BoxShape.circle,
-      color: _card,
-      border: Border.all(color: _gold.withOpacity(0.3), width: 1.5),
-      boxShadow: [
-        BoxShadow(
-          color: _gold.withOpacity(0.14),
-          blurRadius: 18,
-          spreadRadius: 2,
-        ),
-      ],
-    ),
-    child: const Icon(Icons.person_rounded, color: _gold, size: 34),
-  );
 
   Widget _field(
     TextEditingController ctrl,
@@ -443,9 +225,9 @@ class _MyCreateAccountState extends State<MyCreateAccount>
           child: Text(
             label,
             style: TextStyle(
-              color: _gold.withOpacity(0.7),
+              color: _primary.withOpacity(0.8),
               fontSize: 11,
-              fontWeight: FontWeight.w600,
+              fontWeight: FontWeight.w700,
               letterSpacing: 0.8,
             ),
           ),
@@ -454,123 +236,32 @@ class _MyCreateAccountState extends State<MyCreateAccount>
           controller: ctrl,
           obscureText: obscure,
           keyboardType: keyboard,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 14.5,
-            letterSpacing: 0.3,
-          ),
+          style: const TextStyle(color: Colors.black87, fontSize: 15),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: TextStyle(
-              color: Colors.white.withOpacity(0.2),
-              fontSize: 13,
-            ),
-            prefixIcon: Icon(icon, color: _gold.withOpacity(0.75), size: 19),
+            hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
+            prefixIcon: Icon(icon, color: _primary.withOpacity(0.7), size: 20),
             suffixIcon: suffix,
             filled: true,
-            fillColor: _fieldBg,
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 14,
-            ),
+            fillColor: const Color(0xFFF4F7FC),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
-              borderSide: BorderSide(color: Colors.white.withOpacity(0.06)),
+              borderSide: BorderSide.none,
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
-              borderSide: BorderSide(color: Colors.white.withOpacity(0.06)),
+              borderSide: BorderSide(color: Colors.grey.shade200),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(color: _gold, width: 1.4),
+              borderSide: const BorderSide(color: _primary, width: 1.5),
             ),
           ),
         ),
       ],
     );
   }
-
-  Widget _shimmerButton(AppLocalizations l10n) {
-    // if shimmer not ready yet, show static gold button
-    if (_shimmer == null) {
-      return _staticButton(l10n);
-    }
-    return AnimatedBuilder(
-      animation: _shimmer!,
-      builder: (context, _) {
-        final t = _shimmer!.value;
-        return _buttonContainer(
-          gradient: LinearGradient(
-            begin: Alignment(-1.0 + t * 2.5, 0),
-            end: Alignment(0.6 + t * 2.5, 0),
-            colors: const [_goldDark, _gold, _goldLight, _gold, _goldDark],
-            stops: const [0.0, 0.35, 0.5, 0.65, 1.0],
-          ),
-          l10n: l10n,
-        );
-      },
-    );
-  }
-
-  Widget _staticButton(AppLocalizations l10n) => _buttonContainer(
-    gradient: const LinearGradient(
-      colors: [_goldDark, _gold, _goldLight, _gold, _goldDark],
-      stops: [0.0, 0.25, 0.5, 0.75, 1.0],
-    ),
-    l10n: l10n,
-  );
-
-  Widget _buttonContainer({
-    required LinearGradient gradient,
-    required AppLocalizations l10n,
-  }) {
-    return Container(
-      width: double.infinity,
-      height: 52,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        gradient: gradient,
-        boxShadow: [
-          BoxShadow(
-            color: _gold.withOpacity(0.35),
-            blurRadius: 20,
-            offset: const Offset(0, 7),
-          ),
-        ],
-      ),
-      child: ElevatedButton(
-        onPressed: _isLoading ? null : () => _createAccount(l10n),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.transparent,
-          shadowColor: Colors.transparent,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-        ),
-        child: _isLoading
-            ? const SizedBox(
-                height: 22,
-                width: 22,
-                child: CircularProgressIndicator(
-                  color: Colors.black,
-                  strokeWidth: 2.5,
-                ),
-              )
-            : Text(
-                l10n.createAccountBtn,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w800,
-                  color: Colors.black,
-                  letterSpacing: 1.4,
-                ),
-              ),
-      ),
-    );
-  }
-
-  // ── Firebase logic (unchanged) ───────────────────────────────
 
   Future<void> _createAccount(AppLocalizations l10n) async {
     if (nameController.text.trim().isEmpty ||
@@ -610,9 +301,7 @@ class _MyCreateAccountState extends State<MyCreateAccount>
 
     final uid = Uuid();
     final userId = uid.v4();
-    final hashedPw = EncryptionService().hashPassword(
-      passwordController.text.trim(),
-    );
+    final hashedPw = EncryptionService().hashPassword(passwordController.text.trim());
 
     final model = UserModel(
       email: email,
@@ -622,10 +311,7 @@ class _MyCreateAccountState extends State<MyCreateAccount>
       userId: userId,
     );
 
-    await FirebaseFirestore.instance
-        .collection("muazam users")
-        .doc(userId)
-        .set(model.toMap());
+    await FirebaseFirestore.instance.collection("muazam users").doc(userId).set(model.toMap());
 
     setState(() => _isLoading = false);
 
@@ -641,8 +327,6 @@ class _MyCreateAccountState extends State<MyCreateAccount>
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('userId', userId);
 
-    Navigator.of(
-      context,
-    ).pushReplacement(MaterialPageRoute(builder: (_) => const MyPageview()));
+    Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const MyPageview()));
   }
 }

@@ -4,6 +4,8 @@ import 'package:flutter_application_11/l10n/app_localizations.dart';
 import 'package:flutter_application_11/splash_screen.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
+import 'package:flutter_application_11/app_theme.dart';
+
 final ValueNotifier<Locale> appLocale = ValueNotifier(const Locale('en'));
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,7 +24,7 @@ class MyApp extends StatelessWidget {
         return MaterialApp(
           debugShowCheckedModeBanner: false,
           title: 'Flutter Demo',
-          theme: ThemeData(primarySwatch: Colors.blue),
+          theme: AppTheme.lightTheme,
 
           // Localization setup
           locale: locale,

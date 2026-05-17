@@ -1,524 +1,3 @@
-// // import 'package:cloud_firestore/cloud_firestore.dart';
-// // import 'package:flutter/material.dart';
-// // import 'package:flutter_application_11/call_controller.dart';
-// // import 'package:flutter_application_11/call_screens/audio_call_screen.dart';
-// // import 'package:flutter_application_11/call_screens/video_call_screen.dart';
-// // import 'package:flutter_application_11/chatpage.dart';
-// // import 'package:flutter_application_11/friendmodel.dart';
-// // import 'package:flutter_application_11/signaling.dart';
-// // import 'package:flutter_application_11/static_data.dart';
-// // import 'package:flutter_application_11/user_model.dart';
-// // import 'package:get/get.dart';
-// // import 'package:flutter_application_11/l10n/app_localizations.dart';
-
-// // class Home extends StatefulWidget {
-// //   const Home({super.key});
-
-// //   @override
-// //   _HomeState createState() => _HomeState();
-// // }
-
-// // class _HomeState extends State<Home> with WidgetsBindingObserver {
-// //   List<Friendmodel> contacts = [];
-// //   Signaling signaling = Signaling();
-
-// //   getfriend() async {
-// //     contacts.clear();
-// //     QuerySnapshot snapshot = await FirebaseFirestore.instance
-// //         .collection("muazam contacts")
-// //         .where("userId", isEqualTo: StaticData.model!.userId)
-// //         .get();
-
-// //     for (var req in snapshot.docs) {
-// //       Friendmodel model = Friendmodel.fromMap(
-// //         req.data() as Map<String, dynamic>,
-// //       );
-// //       setState(() {
-// //         contacts.add(model);
-// //       });
-// //     }
-// //   }
-
-// //   String chatRoomId(String user1, String user2) {
-// //     if (user1[0].toLowerCase().codeUnits[0] >
-// //         user2.toLowerCase().codeUnits[0]) {
-// //       return "$user1$user2";
-// //     } else {
-// //       return "$user2$user1";
-// //     }
-// //   }
-
-// //   @override
-// //   void initState() {
-// //     super.initState();
-// //     getfriend();
-// //     Get.put(CallController());
-// //     WidgetsBinding.instance.addObserver(this);
-// //     setStatus(true);
-// //   }
-
-// //   @override
-// //   void dispose() {
-// //     setStatus(false);
-// //     WidgetsBinding.instance.removeObserver(this);
-// //     CallController.to.disposeRenderers();
-// //     super.dispose();
-// //   }
-
-// //   @override
-// //   void didChangeAppLifecycleState(AppLifecycleState state) {
-// //     if (state == AppLifecycleState.resumed) {
-// //       setStatus(true);
-// //     } else if (state == AppLifecycleState.paused) {
-// //       setStatus(false);
-// //     }
-// //   }
-
-// //   void setStatus(bool status) async {
-// //     await FirebaseFirestore.instance
-// //         .collection('muazam users')
-// //         .doc(StaticData.model!.userId!)
-// //         .update({
-// //           "online": status,
-// //           "lastSeen": status ? null : FieldValue.serverTimestamp(),
-// //         });
-// //   }
-
-// //   Stream<UserModel?> callerProfileStream(String callerId) {
-// //     return FirebaseFirestore.instance
-// //         .collection('muazam users')
-// //         .doc(callerId)
-// //         .snapshots()
-// //         .map((doc) {
-// //           if (doc.exists && doc.data() != null) {
-// //             return UserModel.fromMap(doc.data()!);
-// //           }
-// //           return null;
-// //         });
-// //   }
-
-// //   @override
-// //   Widget build(BuildContext context) {
-// //     final l10n = AppLocalizations.of(context)!;
-// //     final size = MediaQuery.of(context).size;
-// //     return SafeArea(
-// //       child: SafeArea(
-// //         child: Scaffold(
-// //           body: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-// //             stream: FirebaseFirestore.instance
-// //                 .collection("muazam users")
-// //                 .doc(StaticData.model!.userId)
-// //                 .snapshots(),
-// //             builder: (context, profileSnapshot) {
-// //               return Stack(
-// //                 children: [
-// //                   Container(
-// //                     width: size.width,
-// //                     height: size.height,
-// //                     color: Colors.black,
-// //                   ),
-// //                   Positioned(
-// //                     bottom: 0,
-// //                     child: Container(
-// //                       height: size.height * 0.58,
-// //                       width: size.width,
-// //                       decoration: BoxDecoration(
-// //                         color: Colors.white,
-// //                         borderRadius: BorderRadius.only(
-// //                           topLeft: Radius.circular(30),
-// //                           topRight: Radius.circular(30),
-// //                         ),
-// //                       ),
-// //                     ),
-// //                   ),
-// //                   Positioned(
-// //                     top: 20,
-// //                     left: 30,
-// //                     right: 30,
-// //                     child: Row(
-// //                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-// //                       children: [
-// //                         Container(
-// //                           width: 50,
-// //                           height: 50,
-// //                           decoration: BoxDecoration(
-// //                             border: Border.all(color: Colors.white38),
-// //                             shape: BoxShape.circle,
-// //                           ),
-// //                           child: Icon(
-// //                             Icons.search_rounded,
-// //                             color: Colors.white,
-// //                             size: 30,
-// //                           ),
-// //                         ),
-// //                         Text(
-// //                           l10n.home,
-// //                           style: TextStyle(
-// //                             color: Colors.white,
-// //                             fontSize: 18,
-// //                             fontWeight: FontWeight.bold,
-// //                           ),
-// //                         ),
-// //                         Container(
-// //                           width: 50,
-// //                           height: 50,
-// //                           decoration: BoxDecoration(
-// //                             shape: BoxShape.circle,
-// //                             image: DecorationImage(
-// //                               image: AssetImage("images/person2.jpeg"),
-// //                               fit: BoxFit.cover,
-// //                             ),
-// //                           ),
-// //                         ),
-// //                       ],
-// //                     ),
-// //                   ),
-// //                   Positioned(
-// //                     top: 100,
-// //                     left: 0,
-// //                     right: 0,
-// //                     child: SizedBox(
-// //                       width: 500,
-// //                       height: 140,
-// //                       child: ListView.builder(
-// //                         itemCount: contacts.length,
-// //                         scrollDirection: Axis.horizontal,
-// //                         itemBuilder: (context, index) {
-// //                           return Column(
-// //                             children: [
-// //                               Container(
-// //                                 height: size.height * 0.08,
-// //                                 width: size.width * 0.35,
-// //                                 decoration: BoxDecoration(
-// //                                   shape: BoxShape.circle,
-// //                                   border: Border.all(
-// //                                     color: Colors.white,
-// //                                     width: 2,
-// //                                   ),
-// //                                   // image: DecorationImage(
-// //                                   //     image:
-// //                                   //         AssetImage(StoryModel.mylist[index].image!)),
-// //                                 ),
-// //                               ),
-// //                               SizedBox(height: 10),
-// //                               Text(
-// //                                 contacts[index].friendName!,
-// //                                 style: TextStyle(color: Colors.white),
-// //                               ),
-// //                             ],
-// //                           );
-// //                         },
-// //                       ),
-// //                     ),
-// //                   ),
-// //                   Padding(
-// //                     padding: const EdgeInsets.only(top: 240.0),
-// //                     child: SizedBox(
-// //                       height: size.height * 0.7,
-// //                       width: size.width,
-// //                       child: ListView.builder(
-// //                         itemCount: contacts.length,
-// //                         scrollDirection: Axis.vertical,
-// //                         itemBuilder: (context, index) {
-// //                           return Padding(
-// //                             padding: const EdgeInsets.only(
-// //                               top: 20.0,
-// //                               bottom: 20,
-// //                             ),
-// //                             child: InkWell(
-// //                               onTap: () {
-// //                                 String id = chatRoomId(
-// //                                   contacts[index].friendId!,
-// //                                   StaticData.model!.userId!,
-// //                                 );
-
-// //                                 Navigator.push(
-// //                                   context,
-// //                                   MaterialPageRoute(
-// //                                     builder: (context) => ChatScreen(
-// //                                       chatroomId: id,
-// //                                       profileModel: contacts[index],
-// //                                     ),
-// //                                   ),
-// //                                 );
-// //                               },
-// //                               child: Row(
-// //                                 mainAxisAlignment: MainAxisAlignment.start,
-// //                                 crossAxisAlignment: CrossAxisAlignment.start,
-// //                                 children: [
-// //                                   // Container(
-// //                                   //   height: 60,
-// //                                   //   width: 30,
-// //                                   //   decoration: BoxDecoration(
-// //                                   //     shape: BoxShape.circle,
-// //                                   //     //   image: DecorationImage(
-// //                                   //     //       image:
-// //                                   //     //           AssetImage(Friendmodel.)),
-// //                                   //   ),
-// //                                   // ),
-// //                                   SizedBox(width: 20),
-// //                                   Column(
-// //                                     crossAxisAlignment:
-// //                                         CrossAxisAlignment.start,
-// //                                     children: [
-// //                                       Text(
-// //                                         contacts[index].friendName!,
-// //                                         style: TextStyle(
-// //                                           color: Colors.black,
-// //                                           fontSize: 20,
-// //                                           fontWeight: FontWeight.bold,
-// //                                         ),
-// //                                       ),
-// //                                       SizedBox(height: 05),
-// //                                       Text(
-// //                                         contacts[index].friendId!,
-// //                                         style: TextStyle(color: Colors.black),
-// //                                       ),
-// //                                     ],
-// //                                   ),
-// //                                   SizedBox(width: 50),
-// //                                   // Text(
-// //                                   //   PostModel.mylist[index].time!,
-// //                                   //   style: TextStyle(color: Colors.black),
-// //                                   // ),
-// //                                 ],
-// //                               ),
-// //                             ),
-// //                           );
-// //                         },
-// //                       ),
-// //                     ),
-// //                   ),
-// //                   profileSnapshot.data != null
-// //                       ? profileSnapshot.data!.get('callStatus') == true
-// //                             ? Align(
-// //                                 alignment: Alignment.center,
-// //                                 child: StreamBuilder(
-// //                                   stream: callerProfileStream(
-// //                                     profileSnapshot.data!.get('callerId'),
-// //                                   ),
-// //                                   builder: (context, snapshot) {
-// //                                     if (!snapshot.hasData) {
-// //                                       return const CircularProgressIndicator(
-// //                                         color: Colors.white,
-// //                                       );
-// //                                     }
-
-// //                                     final callerUser = snapshot.data!;
-
-// //                                     /// 🔥 HERE: convert UserModel → Friendmodel
-// //                                     final Friendmodel callerFriend =
-// //                                         Friendmodel(
-// //                                           friendId: callerUser.userId,
-// //                                           friendName: callerUser.name,
-// //                                           id: "",
-// //                                           userId: StaticData.model!.userId,
-// //                                         );
-// //                                     return Card(
-// //                                       elevation: 8,
-// //                                       color: Colors.red,
-// //                                       shape: RoundedRectangleBorder(
-// //                                         borderRadius: BorderRadius.circular(15),
-// //                                       ),
-// //                                       child: Container(
-// //                                         height: 400,
-// //                                         width: 400,
-// //                                         decoration: BoxDecoration(
-// //                                           borderRadius: BorderRadius.circular(
-// //                                             15,
-// //                                           ),
-// //                                           border: Border.all(
-// //                                             color: Colors.white,
-// //                                             width: 4,
-// //                                           ),
-// //                                         ),
-// //                                         child: Column(
-// //                                           children: [
-// //                                             SizedBox(
-// //                                               height: 70,
-// //                                               width: 400,
-// //                                               child: Center(
-// //                                                 child: Text(
-// //                                                   callerFriend.friendName ??
-// //                                                       'Unknown',
-// //                                                   style: TextStyle(
-// //                                                     color: Colors.white,
-// //                                                     fontWeight: FontWeight.w500,
-// //                                                   ),
-// //                                                 ),
-// //                                               ),
-// //                                             ),
-// //                                             Container(
-// //                                               height: 100,
-// //                                               width: 400,
-// //                                               decoration: const BoxDecoration(
-// //                                                 color: Colors.white,
-// //                                                 shape: BoxShape.circle,
-// //                                               ),
-// //                                               child: Icon(
-// //                                                 Icons.call,
-
-// //                                                 color: Colors.red,
-// //                                               ),
-// //                                             ),
-// //                                             Expanded(
-// //                                               child: SizedBox(
-// //                                                 height: 100,
-// //                                                 width: 400,
-// //                                                 child: Row(
-// //                                                   mainAxisAlignment:
-// //                                                       MainAxisAlignment
-// //                                                           .spaceEvenly,
-// //                                                   children: [
-// //                                                     InkWell(
-// //                                                       onTap: () async {
-// //                                                         signaling.hangUp(
-// //                                                           CallController
-// //                                                               .to
-// //                                                               .localRenderer,
-// //                                                         );
-// //                                                         await FirebaseFirestore
-// //                                                             .instance
-// //                                                             .collection(
-// //                                                               'muazam users',
-// //                                                             )
-// //                                                             .doc(
-// //                                                               profileSnapshot
-// //                                                                   .data!
-// //                                                                   .get(
-// //                                                                     'userId',
-// //                                                                   ),
-// //                                                             )
-// //                                                             .update({
-// //                                                               "callStatus":
-// //                                                                   false,
-// //                                                               "roomId": '',
-// //                                                               "callType": "",
-// //                                                               "callerId": "",
-// //                                                             });
-// //                                                       },
-// //                                                       child: Container(
-// //                                                         height: 60,
-// //                                                         width: 100,
-// //                                                         decoration:
-// //                                                             const BoxDecoration(
-// //                                                               color:
-// //                                                                   Colors.white,
-// //                                                               shape: BoxShape
-// //                                                                   .circle,
-// //                                                             ),
-// //                                                         child: Icon(
-// //                                                           Icons.call_end,
-
-// //                                                           color: Colors.red,
-// //                                                         ),
-// //                                                       ),
-// //                                                     ),
-// //                                                     InkWell(
-// //                                                       onTap: () async {
-// //                                                         if (profileSnapshot
-// //                                                                 .data!
-// //                                                                 .get(
-// //                                                                   'callType',
-// //                                                                 ) ==
-// //                                                             "audio") {
-// //                                                           Navigator.push(
-// //                                                             context,
-// //                                                             MaterialPageRoute(
-// //                                                               builder:
-// //                                                                   (
-// //                                                                     context,
-// //                                                                   ) => AudioCall(
-// //                                                                     roomId: profileSnapshot
-// //                                                                         .data!
-// //                                                                         .get(
-// //                                                                           'roomId',
-// //                                                                         ),
-// //                                                                     callstatus:
-// //                                                                         true,
-// //                                                                     friendmodel:
-// //                                                                         callerFriend,
-// //                                                                   ),
-// //                                                             ),
-// //                                                           );
-// //                                                         } else {
-// //                                                           Navigator.push(
-// //                                                             context,
-// //                                                             MaterialPageRoute(
-// //                                                               builder: (context) =>
-// //                                                                   VideoCallScreen(
-// //                                                                     roomId: profileSnapshot
-// //                                                                         .data!
-// //                                                                         .get(
-// //                                                                           'roomId',
-// //                                                                         ),
-// //                                                                     callstatus:
-// //                                                                         true,
-// //                                                                     friendmodel:
-// //                                                                         callerFriend,
-// //                                                                   ),
-// //                                                             ),
-// //                                                           );
-// //                                                         }
-
-// //                                                         await FirebaseFirestore
-// //                                                             .instance
-// //                                                             .collection(
-// //                                                               'muazam users',
-// //                                                             )
-// //                                                             .doc(
-// //                                                               profileSnapshot
-// //                                                                   .data!
-// //                                                                   .get(
-// //                                                                     'userId',
-// //                                                                   ),
-// //                                                             )
-// //                                                             .update({
-// //                                                               "callStatus":
-// //                                                                   false,
-// //                                                               "roomId": '',
-// //                                                             });
-// //                                                       },
-// //                                                       child: Container(
-// //                                                         height: 60,
-// //                                                         width: 100,
-// //                                                         decoration:
-// //                                                             const BoxDecoration(
-// //                                                               color:
-// //                                                                   Colors.white,
-// //                                                               shape: BoxShape
-// //                                                                   .circle,
-// //                                                             ),
-// //                                                         child: Icon(
-// //                                                           Icons.call,
-
-// //                                                           color: Colors.green,
-// //                                                         ),
-// //                                                       ),
-// //                                                     ),
-// //                                                   ],
-// //                                                 ),
-// //                                               ),
-// //                                             ),
-// //                                           ],
-// //                                         ),
-// //                                       ),
-// //                                     );
-// //                                   },
-// //                                 ),
-// //                               )
-// //                             : const SizedBox()
-// //                       : const SizedBox(),
-// //                 ],
-// //               );
-// //             },
-// //           ),
-// //         ),
-// //       ),
-// //     );
-// //   }
-// // }
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_11/call_controller.dart';
@@ -534,6 +13,7 @@ import 'package:flutter_application_11/status/status_view.dart';
 import 'package:flutter_application_11/user_model.dart';
 import 'package:get/get.dart';
 import 'package:flutter_application_11/l10n/app_localizations.dart';
+import 'package:flutter_application_11/editprofile.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -544,6 +24,10 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> with WidgetsBindingObserver {
   List<Friendmodel> contacts = [];
+  List<Friendmodel> filteredContacts = [];
+  bool isSearching = false;
+  TextEditingController searchController = TextEditingController();
+
   Signaling signaling = Signaling();
 
   final StatusService statusService = StatusService();
@@ -568,8 +52,25 @@ class _HomeState extends State<Home> with WidgetsBindingObserver {
       Friendmodel model = Friendmodel.fromMap(
         req.data() as Map<String, dynamic>,
       );
+      contacts.add(model);
+    }
+    if (mounted) {
       setState(() {
-        contacts.add(model);
+        filteredContacts = List.from(contacts);
+      });
+    }
+  }
+
+  void _filterContacts(String query) {
+    if (query.isEmpty) {
+      setState(() {
+        filteredContacts = List.from(contacts);
+      });
+    } else {
+      setState(() {
+        filteredContacts = contacts.where((c) => 
+          (c.friendName ?? "").toLowerCase().contains(query.toLowerCase())
+        ).toList();
       });
     }
   }
@@ -1169,22 +670,22 @@ class _HomeState extends State<Home> with WidgetsBindingObserver {
     final l10n = AppLocalizations.of(context)!;
     final size = MediaQuery.of(context).size;
 
-    return SafeArea(
-      child: SafeArea(
-        child: Scaffold(
-          body: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-            stream: FirebaseFirestore.instance
-                .collection("muazam users")
-                .doc(StaticData.model!.userId)
-                .snapshots(),
-            builder: (context, profileSnapshot) {
+    return Scaffold(
+      backgroundColor: const Color(0xFF246BFD),
+      body: SafeArea(
+        child: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+          stream: FirebaseFirestore.instance
+              .collection("muazam users")
+              .doc(StaticData.model!.userId)
+              .snapshots(),
+          builder: (context, profileSnapshot) {
               return Stack(
                 children: [
-                  // Black background
+                  // Background color updated to Hichat Blue
                   Container(
                     width: size.width,
                     height: size.height,
-                    color: Colors.black,
+                    color: const Color(0xFF246BFD),
                   ),
 
                   // White bottom card
@@ -1206,45 +707,93 @@ class _HomeState extends State<Home> with WidgetsBindingObserver {
                   // Top header
                   Positioned(
                     top: 20,
-                    left: 30,
-                    right: 30,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Container(
-                          width: 50,
-                          height: 50,
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.white38),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            Icons.search_rounded,
-                            color: Colors.white,
-                            size: 30,
-                          ),
-                        ),
-                        Text(
-                          l10n.home,
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Container(
-                          width: 50,
-                          height: 50,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            image: DecorationImage(
-                              image: AssetImage("images/person2.jpeg"),
-                              fit: BoxFit.cover,
+                    left: 20,
+                    right: 20,
+                    child: isSearching
+                        ? Container(
+                            height: 45,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(30),
                             ),
+                            child: TextField(
+                              controller: searchController,
+                              onChanged: _filterContacts,
+                              style: TextStyle(color: Colors.black87),
+                              decoration: InputDecoration(
+                                hintText: "Search friends...",
+                                hintStyle: TextStyle(color: Colors.grey),
+                                border: InputBorder.none,
+                                prefixIcon: Icon(Icons.search, color: Colors.black54),
+                                suffixIcon: IconButton(
+                                  icon: Icon(Icons.close, color: Colors.black54),
+                                  onPressed: () {
+                                    setState(() {
+                                      isSearching = false;
+                                      searchController.clear();
+                                      _filterContacts("");
+                                    });
+                                  },
+                                ),
+                              ),
+                            ),
+                          )
+                        : Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              // Center text
+                              Align(
+                                alignment: Alignment.center,
+                                child: Text(
+                                  "Chatbox",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                              ),
+                              // Left profile
+                              Align(
+                                alignment: Alignment.centerLeft,
+                                child: InkWell(
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(builder: (context) => Editprofile()),
+                                    );
+                                  },
+                                  child: Container(
+                                    width: 45,
+                                    height: 45,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      image: DecorationImage(
+                                        image: (StaticData.model?.imageUrl != null && StaticData.model!.imageUrl!.isNotEmpty)
+                                            ? NetworkImage(StaticData.model!.imageUrl!) as ImageProvider
+                                            : const AssetImage("images/person2.jpeg") as ImageProvider,
+                                        fit: BoxFit.cover,
+                                      ),
+                                      border: Border.all(color: Colors.white, width: 2),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              // Right search
+                              Align(
+                                alignment: Alignment.centerRight,
+                                child: IconButton(
+                                  icon: Icon(Icons.search_rounded, color: Colors.white, size: 28),
+                                  onPressed: () {
+                                    setState(() {
+                                      isSearching = true;
+                                    });
+                                  },
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
-                      ],
-                    ),
                   ),
 
                   // Status bar
@@ -1255,62 +804,103 @@ class _HomeState extends State<Home> with WidgetsBindingObserver {
                     child: _buildStatusBar(),
                   ),
 
-                  // Chat list
+                  // Chat list (Original layout)
                   Padding(
                     padding: const EdgeInsets.only(top: 220.0),
                     child: SizedBox(
                       height: size.height * 0.7,
                       width: size.width,
                       child: ListView.builder(
-                        itemCount: contacts.length,
+                        itemCount: isSearching && searchController.text.isNotEmpty 
+                            ? filteredContacts.length 
+                            : contacts.length,
                         scrollDirection: Axis.vertical,
                         itemBuilder: (context, index) {
-                          return Padding(
-                            padding: const EdgeInsets.only(
-                              top: 20.0,
-                              bottom: 20,
-                            ),
-                            child: InkWell(
-                              onTap: () {
-                                String id = chatRoomId(
-                                  contacts[index].friendId!,
-                                  StaticData.model!.userId!,
-                                );
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => ChatScreen(
-                                      chatroomId: id,
-                                      profileModel: contacts[index],
+                          final currentContact = isSearching && searchController.text.isNotEmpty 
+                              ? filteredContacts[index] 
+                              : contacts[index];
+                              
+                          return GestureDetector(
+                            onTap: () {
+                              String id = chatRoomId(
+                                currentContact.friendId!,
+                                StaticData.model!.userId!,
+                              );
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => ChatScreen(
+                                    chatroomId: id,
+                                    profileModel: currentContact,
+                                  ),
+                                ),
+                              );
+                            },
+                            child: Container(
+                              margin: const EdgeInsets.only(left: 16, right: 16, bottom: 10),
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.04),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 3),
+                                  ),
+                                ],
+                              ),
+                              child: Row(
+                                children: [
+                                  CircleAvatar(
+                                    radius: 26,
+                                    backgroundColor: const Color(0xFFE9F0FF),
+                                    child: Text(
+                                      currentContact.friendName != null && currentContact.friendName!.isNotEmpty
+                                          ? currentContact.friendName![0].toUpperCase()
+                                          : "U",
+                                      style: const TextStyle(
+                                        color: Color(0xFF246BFD),
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
                                   ),
-                                );
-                              },
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  SizedBox(width: 20),
+                                  const SizedBox(width: 14),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          currentContact.friendName ?? 'Unknown',
+                                          style: const TextStyle(
+                                            color: Colors.black87,
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          "Tap to chat...",
+                                          style: TextStyle(
+                                            color: Colors.grey.shade500,
+                                            fontSize: 13,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                                   Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
+                                    crossAxisAlignment: CrossAxisAlignment.end,
                                     children: [
                                       Text(
-                                        contacts[index].friendName!,
-                                        style: TextStyle(
-                                          color: Colors.black,
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.bold,
-                                        ),
+                                        "",
+                                        style: TextStyle(color: Colors.grey.shade400, fontSize: 12),
                                       ),
-                                      SizedBox(height: 5),
-                                      Text(
-                                        contacts[index].friendId!,
-                                        style: TextStyle(color: Colors.black),
-                                      ),
+                                      const SizedBox(height: 6),
+                                      Icon(Icons.chevron_right_rounded, color: Colors.grey.shade300, size: 22),
                                     ],
                                   ),
-                                  SizedBox(width: 50),
                                 ],
                               ),
                             ),
@@ -1345,189 +935,122 @@ class _HomeState extends State<Home> with WidgetsBindingObserver {
                                           userId: StaticData.model!.userId,
                                         );
 
-                                    return Card(
-                                      elevation: 8,
-                                      color: Colors.red,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(15),
-                                      ),
+                                    // Modern Incoming Call Card
+                                    return Align(
+                                      alignment: Alignment.bottomCenter,
                                       child: Container(
-                                        height: 400,
-                                        width: 400,
+                                        margin: const EdgeInsets.all(20),
+                                        padding: const EdgeInsets.all(24),
                                         decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.circular(
-                                            15,
-                                          ),
-                                          border: Border.all(
-                                            color: Colors.white,
-                                            width: 4,
-                                          ),
+                                          color: Colors.white,
+                                          borderRadius: BorderRadius.circular(28),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.black.withOpacity(0.18),
+                                              blurRadius: 30,
+                                              offset: const Offset(0, 10),
+                                            ),
+                                          ],
                                         ),
                                         child: Column(
+                                          mainAxisSize: MainAxisSize.min,
                                           children: [
-                                            SizedBox(
-                                              height: 70,
-                                              width: 400,
-                                              child: Center(
-                                                child: Text(
-                                                  callerFriend.friendName ??
-                                                      'Unknown',
-                                                  style: TextStyle(
-                                                    color: Colors.white,
-                                                    fontWeight: FontWeight.w500,
+                                            // Caller avatar
+                                            CircleAvatar(
+                                              radius: 36,
+                                              backgroundColor: const Color(0xFFE9F0FF),
+                                              child: Text(
+                                                (callerFriend.friendName ?? 'U')[0].toUpperCase(),
+                                                style: const TextStyle(
+                                                  color: Color(0xFF246BFD),
+                                                  fontSize: 28,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ),
+                                            const SizedBox(height: 12),
+                                            Text(
+                                              callerFriend.friendName ?? 'Unknown',
+                                              style: const TextStyle(
+                                                color: Colors.black87,
+                                                fontSize: 20,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 4),
+                                            const Text(
+                                              'Incoming Call...',
+                                              style: TextStyle(color: Colors.grey, fontSize: 14),
+                                            ),
+                                            const SizedBox(height: 24),
+                                            Row(
+                                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                              children: [
+                                                // Decline
+                                                GestureDetector(
+                                                  onTap: () async {
+                                                    signaling.hangUp(CallController.to.localRenderer);
+                                                    await FirebaseFirestore.instance
+                                                        .collection('muazam users')
+                                                        .doc(profileSnapshot.data!.get('userId'))
+                                                        .update({"callStatus": false, "roomId": '', "callType": "", "callerId": ""});
+                                                  },
+                                                  child: Column(
+                                                    children: [
+                                                      Container(
+                                                        width: 60, height: 60,
+                                                        decoration: BoxDecoration(
+                                                          color: Colors.red.shade50,
+                                                          shape: BoxShape.circle,
+                                                        ),
+                                                        child: const Icon(Icons.call_end_rounded, color: Colors.red, size: 28),
+                                                      ),
+                                                      const SizedBox(height: 8),
+                                                      const Text('Decline', style: TextStyle(color: Colors.red, fontSize: 12)),
+                                                    ],
                                                   ),
                                                 ),
-                                              ),
-                                            ),
-                                            Container(
-                                              height: 100,
-                                              width: 400,
-                                              decoration: const BoxDecoration(
-                                                color: Colors.white,
-                                                shape: BoxShape.circle,
-                                              ),
-                                              child: Icon(
-                                                Icons.call,
-                                                color: Colors.red,
-                                              ),
-                                            ),
-                                            Expanded(
-                                              child: SizedBox(
-                                                height: 100,
-                                                width: 400,
-                                                child: Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment
-                                                          .spaceEvenly,
-                                                  children: [
-                                                    // Decline
-                                                    InkWell(
-                                                      onTap: () async {
-                                                        signaling.hangUp(
-                                                          CallController
-                                                              .to
-                                                              .localRenderer,
-                                                        );
-                                                        await FirebaseFirestore
-                                                            .instance
-                                                            .collection(
-                                                              'muazam users',
-                                                            )
-                                                            .doc(
-                                                              profileSnapshot
-                                                                  .data!
-                                                                  .get(
-                                                                    'userId',
-                                                                  ),
-                                                            )
-                                                            .update({
-                                                              "callStatus":
-                                                                  false,
-                                                              "roomId": '',
-                                                              "callType": "",
-                                                              "callerId": "",
-                                                            });
-                                                      },
-                                                      child: Container(
-                                                        height: 60,
-                                                        width: 100,
-                                                        decoration:
-                                                            const BoxDecoration(
-                                                              color:
-                                                                  Colors.white,
-                                                              shape: BoxShape
-                                                                  .circle,
-                                                            ),
-                                                        child: Icon(
-                                                          Icons.call_end,
-                                                          color: Colors.red,
+                                                // Accept
+                                                GestureDetector(
+                                                  onTap: () async {
+                                                    if (profileSnapshot.data!.get('callType') == "audio") {
+                                                      Navigator.push(context, MaterialPageRoute(
+                                                        builder: (context) => AudioCall(
+                                                          roomId: profileSnapshot.data!.get('roomId'),
+                                                          callstatus: true,
+                                                          friendmodel: callerFriend,
                                                         ),
-                                                      ),
-                                                    ),
-                                                    // Accept
-                                                    InkWell(
-                                                      onTap: () async {
-                                                        if (profileSnapshot
-                                                                .data!
-                                                                .get(
-                                                                  'callType',
-                                                                ) ==
-                                                            "audio") {
-                                                          Navigator.push(
-                                                            context,
-                                                            MaterialPageRoute(
-                                                              builder:
-                                                                  (
-                                                                    context,
-                                                                  ) => AudioCall(
-                                                                    roomId: profileSnapshot
-                                                                        .data!
-                                                                        .get(
-                                                                          'roomId',
-                                                                        ),
-                                                                    callstatus:
-                                                                        true,
-                                                                    friendmodel:
-                                                                        callerFriend,
-                                                                  ),
-                                                            ),
-                                                          );
-                                                        } else {
-                                                          Navigator.push(
-                                                            context,
-                                                            MaterialPageRoute(
-                                                              builder: (context) =>
-                                                                  VideoCallScreen(
-                                                                    roomId: profileSnapshot
-                                                                        .data!
-                                                                        .get(
-                                                                          'roomId',
-                                                                        ),
-                                                                    callstatus:
-                                                                        true,
-                                                                    friendmodel:
-                                                                        callerFriend,
-                                                                  ),
-                                                            ),
-                                                          );
-                                                        }
-                                                        await FirebaseFirestore
-                                                            .instance
-                                                            .collection(
-                                                              'muazam users',
-                                                            )
-                                                            .doc(
-                                                              profileSnapshot
-                                                                  .data!
-                                                                  .get(
-                                                                    'userId',
-                                                                  ),
-                                                            )
-                                                            .update({
-                                                              "callStatus":
-                                                                  false,
-                                                              "roomId": '',
-                                                            });
-                                                      },
-                                                      child: Container(
-                                                        height: 60,
-                                                        width: 100,
-                                                        decoration:
-                                                            const BoxDecoration(
-                                                              color:
-                                                                  Colors.white,
-                                                              shape: BoxShape
-                                                                  .circle,
-                                                            ),
-                                                        child: Icon(
-                                                          Icons.call,
-                                                          color: Colors.green,
+                                                      ));
+                                                    } else {
+                                                      Navigator.push(context, MaterialPageRoute(
+                                                        builder: (context) => VideoCallScreen(
+                                                          roomId: profileSnapshot.data!.get('roomId'),
+                                                          callstatus: true,
+                                                          friendmodel: callerFriend,
                                                         ),
+                                                      ));
+                                                    }
+                                                    await FirebaseFirestore.instance
+                                                        .collection('muazam users')
+                                                        .doc(profileSnapshot.data!.get('userId'))
+                                                        .update({"callStatus": false, "roomId": ''});
+                                                  },
+                                                  child: Column(
+                                                    children: [
+                                                      Container(
+                                                        width: 60, height: 60,
+                                                        decoration: BoxDecoration(
+                                                          color: Colors.green.shade50,
+                                                          shape: BoxShape.circle,
+                                                        ),
+                                                        child: const Icon(Icons.call_rounded, color: Colors.green, size: 28),
                                                       ),
-                                                    ),
-                                                  ],
+                                                      const SizedBox(height: 8),
+                                                      const Text('Accept', style: TextStyle(color: Colors.green, fontSize: 12)),
+                                                    ],
+                                                  ),
                                                 ),
-                                              ),
+                                              ],
                                             ),
                                           ],
                                         ),
@@ -1543,7 +1066,6 @@ class _HomeState extends State<Home> with WidgetsBindingObserver {
             },
           ),
         ),
-      ),
     );
   }
 }

@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_application_11/recentcalls.dart';
 import 'package:flutter_application_11/request_model.dart';
 import 'package:flutter_application_11/static_data.dart';
 import 'package:flutter_application_11/user_model.dart';
@@ -16,23 +15,109 @@ class Mycalls extends StatefulWidget {
 
 class _MycallsState extends State<Mycalls> {
   List<UserModel> allUsers = [];
+  List<UserModel> filteredUsers = [];
+  bool isSearching = false;
+  final TextEditingController searchController = TextEditingController();
 
-  getAllUsers() async {
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    getAllUsers();
+  }
+
+  @override
+  void dispose() {
+    searchController.dispose();
+    super.dispose();
+  }
+
+  void getAllUsers() async {
     QuerySnapshot snapshot = await FirebaseFirestore.instance
         .collection("muazam users")
         .where("userId", isNotEqualTo: StaticData.model!.userId)
         .get();
+    
     for (var user in snapshot.docs) {
       UserModel model = UserModel.fromMap(user.data() as Map<String, dynamic>);
       allUsers.add(model);
-      setState(() {});
+    }
+    filteredUsers = List.from(allUsers);
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
-  @override
-  void initState() {
-    getAllUsers();
-    super.initState();
+  void filterUsers(String query) {
+    if (query.isEmpty) {
+      filteredUsers = List.from(allUsers);
+    } else {
+      filteredUsers = allUsers
+          .where((user) => (user.name ?? "").toLowerCase().contains(query.toLowerCase()))
+          .toList();
+    }
+    setState(() {});
+  }
+
+  Future<void> _sendRequest(UserModel targetUser) async {
+    final l10n = AppLocalizations.of(context)!;
+    final senderId = StaticData.model!.userId;
+    final receiverId = targetUser.userId;
+
+    final friendCheck = await FirebaseFirestore.instance
+        .collection("muazam contacts")
+        .where("userId", isEqualTo: senderId)
+        .where("friendId", isEqualTo: receiverId)
+        .get();
+
+    if (friendCheck.docs.isNotEmpty) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.alreadyInContacts)));
+      return;
+    }
+
+    final reverseCheck = await FirebaseFirestore.instance
+        .collection("muazam requests")
+        .where("senderId", isEqualTo: receiverId)
+        .where("reciverId", isEqualTo: senderId)
+        .get();
+
+    if (reverseCheck.docs.isNotEmpty) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.userAlreadySentRequest)));
+      return;
+    }
+
+    final requestCheck = await FirebaseFirestore.instance
+        .collection("muazam requests")
+        .where("senderId", isEqualTo: senderId)
+        .where("reciverId", isEqualTo: receiverId)
+        .get();
+
+    if (requestCheck.docs.isNotEmpty) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.alreadySentRequest)));
+      return;
+    }
+
+    var uid = const Uuid();
+    String reqID = uid.v4();
+
+    Reqmodel model = Reqmodel(
+      reciverId: receiverId,
+      reciverName: targetUser.name,
+      reqId: reqID,
+      senderId: senderId,
+      senderName: StaticData.model!.name,
+    );
+
+    await FirebaseFirestore.instance.collection("muazam requests").doc(reqID).set(model.toMap());
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.requestSent), backgroundColor: Colors.green),
+      );
+    }
   }
 
   @override
@@ -40,215 +125,210 @@ class _MycallsState extends State<Mycalls> {
     final l10n = AppLocalizations.of(context)!;
     final height = MediaQuery.of(context).size.height;
     final width = MediaQuery.of(context).size.width;
-    return SafeArea(
-      child: Scaffold(
-        body: Stack(
+    
+    return Scaffold(
+      backgroundColor: const Color(0xFF246BFD),
+      body: SafeArea(
+        child: Column(
           children: [
-            Container(width: width, height: height, color: Colors.black),
-            Positioned(
-              bottom: 0,
+            // Top Bar
+            Padding(
+              padding: const EdgeInsets.only(top: 10, left: 20, right: 20, bottom: 20),
+              child: isSearching
+                  ? Container(
+                      height: 50,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(25),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          )
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.arrow_back, color: Color(0xFF246BFD)),
+                            onPressed: () {
+                              setState(() {
+                                isSearching = false;
+                                searchController.clear();
+                                filterUsers('');
+                              });
+                            },
+                          ),
+                          Expanded(
+                            child: TextField(
+                              controller: searchController,
+                              autofocus: true,
+                              style: const TextStyle(color: Colors.black, fontSize: 16),
+                              decoration: const InputDecoration(
+                                hintText: "Search users...",
+                                hintStyle: TextStyle(color: Colors.grey),
+                                border: InputBorder.none,
+                              ),
+                              onChanged: filterUsers,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  : Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              isSearching = true;
+                            });
+                          },
+                          child: Container(
+                            width: 45,
+                            height: 45,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.2),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.search_rounded,
+                              color: Colors.white,
+                              size: 24,
+                            ),
+                          ),
+                        ),
+                        Text(
+                          l10n.users,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(width: 45), // Replaces the call icon to keep the title centered
+                      ],
+                    ),
+            ),
+            
+            // Main White Container
+            Expanded(
               child: Container(
-                height: height * 0.7,
                 width: width,
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.only(
                     topLeft: Radius.circular(30),
                     topRight: Radius.circular(30),
                   ),
                 ),
-              ),
-            ),
-            Positioned(
-              top: 20,
-              left: 30,
-              right: 30,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Container(
-                    width: 50,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.white38),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      Icons.search_rounded,
-                      color: Colors.white,
-                      size: 30,
-                    ),
-                  ),
-                  Text(
-                    l10n.users,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Container(
-                    width: 50,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white),
-                    ),
-                    child: Icon(Icons.call, color: Colors.white),
-                  ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(top: 180.0, left: 30),
-              child: Text(
-                l10n.users,
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(top: 200.0),
-              child: SizedBox(
-                width: width,
-                child: ListView.builder(
-                  itemCount: allUsers.length,
-                  scrollDirection: Axis.vertical,
-                  itemBuilder: (context, index) {
-                    return Padding(
-                      padding: const EdgeInsets.all(20.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            height: height * 0.07,
-                            width: width * 0.2,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              image: DecorationImage(
-                                image: AssetImage(recentcalls.mylist[0].image!),
-                              ),
-                            ),
-                          ),
-                          SizedBox(width: 30),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                allUsers[index].name!,
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              SizedBox(height: 05),
-                              Text(allUsers[index].email!),
-                            ],
-                          ),
-                          Spacer(),
-                          InkWell(
-                            onTap: () async {
-                              final senderId = StaticData.model!.userId;
-                              final receiverId = allUsers[index].userId;
-
-                              /// 🔍 1️⃣ Already friends?
-                              final friendCheck = await FirebaseFirestore
-                                  .instance
-                                  .collection("muazam contacts")
-                                  .where("userId", isEqualTo: senderId)
-                                  .where("friendId", isEqualTo: receiverId)
-                                  .get();
-
-                              if (friendCheck.docs.isNotEmpty) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(l10n.alreadyInContacts),
-                                  ),
-                                );
-                                return;
-                              }
-                              final reverseCheck = await FirebaseFirestore
-                                  .instance
-                                  .collection("muazam requests")
-                                  .where("senderId", isEqualTo: receiverId)
-                                  .where("reciverId", isEqualTo: senderId)
-                                  .get();
-
-                              if (reverseCheck.docs.isNotEmpty) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(l10n.userAlreadySentRequest),
-                                  ),
-                                );
-                                return;
-                              }
-
-                              /// 🔍 2️⃣ Request already sent?
-                              final requestCheck = await FirebaseFirestore
-                                  .instance
-                                  .collection("muazam requests")
-                                  .where("senderId", isEqualTo: senderId)
-                                  .where("reciverId", isEqualTo: receiverId)
-                                  .get();
-
-                              if (requestCheck.docs.isNotEmpty) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(l10n.alreadySentRequest),
-                                  ),
-                                );
-                                return;
-                              }
-
-                              /// ✅ SAME OLD LOGIC
-                              var uid = Uuid();
-                              String reqID = uid.v4();
-
-                              Reqmodel model = Reqmodel(
-                                reciverId: receiverId,
-                                reciverName: allUsers[index].name,
-                                reqId: reqID,
-                                senderId: senderId,
-                                senderName: StaticData.model!.name,
-                              );
-
-                              await FirebaseFirestore.instance
-                                  .collection("muazam requests")
-                                  .doc(reqID)
-                                  .set(model.toMap());
-
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text(l10n.requestSent)),
-                              );
-                            },
-
-                            // onTap: () {
-                            //   var uid = Uuid();
-                            //   String reqID = uid.v4();
-                            //   Reqmodel model = Reqmodel(
-                            //     reciverId: allUsers[index].userId,
-                            //     reciverName: allUsers[index].name,
-                            //     reqId: reqID,
-                            //     senderId: StaticData.model!.userId,
-                            //     senderName: StaticData.model!.name,
-                            //   );
-
-                            //   FirebaseFirestore.instance
-                            //       .collection("muazam requests")
-                            //       .doc(reqID)
-                            //       .set(model.toMap());
-                            // },
-                            child: Icon(Icons.person_add),
-                          ),
-                        ],
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(top: 30.0, left: 25, bottom: 10),
+                      child: Text(
+                        l10n.users,
+                        style: const TextStyle(
+                          color: Colors.black87,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    );
-                  },
+                    ),
+                    Expanded(
+                      child: _isLoading
+                          ? const Center(child: CircularProgressIndicator(color: Color(0xFF246BFD)))
+                          : filteredUsers.isEmpty
+                              ? Center(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.person_search_rounded, size: 80, color: Colors.grey.shade300),
+                                      const SizedBox(height: 15),
+                                      Text(
+                                        "No users found",
+                                        style: TextStyle(color: Colors.grey.shade500, fontSize: 16),
+                                      )
+                                    ],
+                                  ),
+                                )
+                              : ListView.builder(
+                                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                                  itemCount: filteredUsers.length,
+                                  itemBuilder: (context, index) {
+                                    final user = filteredUsers[index];
+                                    return Container(
+                                      margin: const EdgeInsets.only(bottom: 15),
+                                      padding: const EdgeInsets.all(12),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(16),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black.withOpacity(0.04),
+                                            blurRadius: 10,
+                                            offset: const Offset(0, 4),
+                                          ),
+                                        ],
+                                        border: Border.all(color: Colors.grey.shade100),
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          CircleAvatar(
+                                            radius: 28,
+                                            backgroundColor: Colors.grey.shade200,
+                                            backgroundImage: (user.imageUrl != null && user.imageUrl!.isNotEmpty)
+                                                ? NetworkImage(user.imageUrl!) as ImageProvider
+                                                : const AssetImage('images/person2.jpeg') as ImageProvider,
+                                          ),
+                                          const SizedBox(width: 15),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  user.name ?? 'Unknown',
+                                                  style: const TextStyle(
+                                                    color: Colors.black87,
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                  maxLines: 1,
+                                                  overflow: TextOverflow.ellipsis,
+                                                ),
+                                                const SizedBox(height: 4),
+                                                Text(
+                                                  user.email ?? '',
+                                                  style: TextStyle(
+                                                    color: Colors.grey.shade500,
+                                                    fontSize: 12,
+                                                  ),
+                                                  maxLines: 1,
+                                                  overflow: TextOverflow.ellipsis,
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          GestureDetector(
+                                            onTap: () => _sendRequest(user),
+                                            child: Container(
+                                              padding: const EdgeInsets.all(10),
+                                              decoration: BoxDecoration(
+                                                color: const Color(0xFF246BFD).withOpacity(0.1),
+                                                shape: BoxShape.circle,
+                                              ),
+                                              child: const Icon(Icons.person_add_alt_1, color: Color(0xFF246BFD), size: 24),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  },
+                                ),
+                    ),
+                  ],
                 ),
               ),
             ),

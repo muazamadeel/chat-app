@@ -54,7 +54,7 @@ class _MysettingState extends State<Mysetting> {
 
     showModalBottomSheet(
       context: context,
-      shape: RoundedRectangleBorder(
+      shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (_) => StatefulBuilder(
@@ -65,9 +65,9 @@ class _MysettingState extends State<Mysetting> {
             children: [
               Text(
                 l10n.selectLanguage,
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
-              SizedBox(height: 15),
+              const SizedBox(height: 15),
               _langTile(
                 "🇬🇧 ${l10n.english}",
                 const Locale('en'),
@@ -89,8 +89,8 @@ class _MysettingState extends State<Mysetting> {
   Widget _langTile(String label, Locale locale, StateSetter setModalState) {
     final isSelected = appLocale.value == locale;
     return ListTile(
-      title: Text(label, style: TextStyle(fontSize: 16)),
-      trailing: isSelected ? Icon(Icons.check, color: Colors.green) : null,
+      title: Text(label, style: const TextStyle(fontSize: 16)),
+      trailing: isSelected ? const Icon(Icons.check, color: Colors.green) : null,
       onTap: () {
         appLocale.value = locale;
         Navigator.pop(context);
@@ -110,267 +110,208 @@ class _MysettingState extends State<Mysetting> {
     final height = MediaQuery.of(context).size.height;
     final width = MediaQuery.of(context).size.width;
 
-    return SafeArea(
-      child: Scaffold(
-        body: Stack(
+    return Scaffold(
+      backgroundColor: const Color(0xFF246BFD),
+      body: SafeArea(
+        child: Column(
           children: [
-            Container(width: width, height: height, color: Colors.black),
-            Positioned(
-              bottom: 0,
+            // Top Bar
+            Padding(
+              padding: const EdgeInsets.only(top: 20, left: 20, right: 20, bottom: 20),
+              child: Row(
+                children: [
+                  const SizedBox(width: 40), // Placeholder for centering
+                  Expanded(
+                    child: Center(
+                      child: Text(
+                        l10n.settings,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: _showLanguagePicker,
+                    icon: const Icon(Icons.language, color: Colors.white, size: 26),
+                    tooltip: l10n.changeLanguage,
+                  ),
+                ],
+              ),
+            ),
+            
+            // Main White Container
+            Expanded(
               child: Container(
-                height: height * 0.7,
                 width: width,
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.only(
                     topLeft: Radius.circular(30),
                     topRight: Radius.circular(30),
                   ),
                 ),
-              ),
-            ),
-            // Top bar
-            Positioned(
-              top: 20,
-              left: 30,
-              right: 20,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Icon(Icons.arrow_back, color: Colors.white, size: 30),
-                  SizedBox(width: 60),
-                  Text(
-                    l10n.settings,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Spacer(),
-                  IconButton(
-                    onPressed: _showLanguagePicker,
-                    icon: Icon(Icons.language, color: Colors.white, size: 26),
-                    tooltip: l10n.changeLanguage,
-                  ),
-                ],
-              ),
-            ),
-            // Profile row
-            Padding(
-              padding: const EdgeInsets.only(top: 160.0, left: 20, right: 20),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  CircleAvatar(
-                    radius: 25,
-                    backgroundImage: AssetImage('images/person2.jpeg'),
-                  ),
-                  SizedBox(width: 30),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        name ?? l10n.loading,
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                child: ListView(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
+                  children: [
+                    // Profile Row
+                    Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 35,
+                          backgroundColor: Colors.grey.shade300,
+                          backgroundImage: (StaticData.model != null &&
+                                  StaticData.model!.imageUrl != null &&
+                                  StaticData.model!.imageUrl!.isNotEmpty)
+                              ? NetworkImage(StaticData.model!.imageUrl!) as ImageProvider
+                              : const AssetImage('images/person2.jpeg'),
                         ),
+                        const SizedBox(width: 20),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                name ?? l10n.loading,
+                                style: const TextStyle(
+                                  color: Colors.black87,
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 5),
+                              Text(
+                                StaticData.model?.email ?? "",
+                                style: TextStyle(
+                                  color: Colors.grey.shade600,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Icon(Icons.qr_code, size: 35, color: Color(0xFF246BFD)),
+                      ],
+                    ),
+                    const SizedBox(height: 25),
+                    const Divider(color: Colors.black12, thickness: 1),
+                    const SizedBox(height: 15),
+
+                    // Settings Items
+                    _buildSettingsItem(
+                      icon: Icons.person_outline,
+                      title: l10n.editProfile,
+                      subtitle: l10n.editProfileSub,
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const Editprofile()),
                       ),
-                    ],
-                  ),
-                  Spacer(),
-                  Icon(Icons.qr_code, size: 40),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(top: 225.0),
-              child: Divider(color: Colors.black38, thickness: 1),
-            ),
-            // Edit Profile
-            Padding(
-              padding: const EdgeInsets.only(top: 255.0, left: 20, right: 20),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Icon(Icons.key_outlined, color: Colors.grey, size: 30),
-                  SizedBox(width: 40),
-                  InkWell(
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => Editprofile()),
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          l10n.editProfile,
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
+                    
+                    _buildSettingsItem(
+                      icon: Icons.lock_outline_rounded,
+                      title: l10n.changePassword,
+                      subtitle: l10n.changePasswordSub,
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const Changepassword()),
+                      ),
+                    ),
+                    
+                    _buildSettingsItem(
+                      icon: Icons.notifications_none_rounded,
+                      title: l10n.notifications,
+                      subtitle: l10n.notificationsSub,
+                      onTap: () {},
+                    ),
+                    
+                    _buildSettingsItem(
+                      icon: Icons.language,
+                      title: l10n.changeLanguage,
+                      subtitle: "${l10n.english} / ${l10n.urdu} / ${l10n.french}",
+                      onTap: _showLanguagePicker,
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Logout Button
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Colors.red.withOpacity(0.1),
+                          shape: BoxShape.circle,
                         ),
-                        SizedBox(height: 5),
-                        Text(l10n.editProfileSub),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            // Change Password
-            Padding(
-              padding: const EdgeInsets.only(top: 335.0, left: 20, right: 20),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Icon(Icons.chat_rounded, color: Colors.grey, size: 30),
-                  SizedBox(width: 40),
-                  InkWell(
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => Changepassword()),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          l10n.changePassword,
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        SizedBox(height: 5),
-                        Text(l10n.changePasswordSub),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            // Notifications
-            Padding(
-              padding: const EdgeInsets.only(top: 405.0, left: 20, right: 20),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Icon(Icons.notifications, color: Colors.grey, size: 30),
-                  SizedBox(width: 40),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        l10n.notifications,
-                        style: TextStyle(
-                          color: Colors.black,
+                        child: const Icon(Icons.logout_rounded, color: Colors.red, size: 24),
+                      ),
+                      title: Text(
+                        l10n.logout,
+                        style: const TextStyle(
+                          color: Colors.red,
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      SizedBox(height: 5),
-                      Text(l10n.notificationsSub),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            // Help
-            Padding(
-              padding: const EdgeInsets.only(top: 475.0, left: 20, right: 20),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Icon(
-                    Icons.question_mark_rounded,
-                    color: Colors.grey,
-                    size: 30,
-                  ),
-                  SizedBox(width: 40),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        l10n.help,
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      SizedBox(height: 5),
-                      Text(l10n.helpSub),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            // Change Language row
-            Padding(
-              padding: const EdgeInsets.only(top: 545.0, left: 20, right: 20),
-              child: InkWell(
-                onTap: _showLanguagePicker,
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Icon(Icons.language, color: Colors.grey, size: 30),
-                    SizedBox(width: 40),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          l10n.changeLanguage,
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        SizedBox(height: 5),
-                        Text("${l10n.english} / ${l10n.urdu} / ${l10n.french}"),
-                      ],
+                      onTap: () async {
+                        await FirebaseFirestore.instance
+                            .collection('muazam users')
+                            .doc(StaticData.model!.userId!)
+                            .update({
+                              "online": false,
+                              "lastSeen": FieldValue.serverTimestamp(),
+                            });
+                        await logout(context);
+                      },
                     ),
-                  ],
-                ),
-              ),
-            ),
-            // Logout
-            Padding(
-              padding: const EdgeInsets.only(top: 610.0, left: 20, right: 20),
-              child: InkWell(
-                onTap: () async {
-                  await FirebaseFirestore.instance
-                      .collection('muazam users')
-                      .doc(StaticData.model!.userId!)
-                      .update({
-                        "online": false,
-                        "lastSeen": FieldValue.serverTimestamp(),
-                      });
-                  await logout(context);
-                },
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Icon(Icons.person, color: Colors.grey, size: 30),
-                    SizedBox(width: 40),
-                    Text(
-                      l10n.logout,
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                    const SizedBox(height: 40),
                   ],
                 ),
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildSettingsItem({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: ListTile(
+        contentPadding: EdgeInsets.zero,
+        onTap: onTap,
+        leading: Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: const Color(0xFF246BFD).withOpacity(0.1),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(icon, color: const Color(0xFF246BFD), size: 24),
+        ),
+        title: Text(
+          title,
+          style: const TextStyle(
+            color: Colors.black87,
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        subtitle: Text(
+          subtitle,
+          style: TextStyle(
+            color: Colors.grey.shade600,
+            fontSize: 13,
+          ),
+        ),
+        trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
       ),
     );
   }
