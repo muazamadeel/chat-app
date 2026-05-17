@@ -46,7 +46,7 @@
 
 Experience the app instantly inside an interactive web emulator! Try the live demo here:
 
-👉 **[Launch ChatBox Live Demo](https://appetize.io/embed/b_uebciv3zkvgxtqwzyf4hzmciaq)**
+👉 **[Launch ChatBox Live Demo](https://appetize.io/embed/b_gusdb546o7xrnjshb34dwejcsa)**
 
 *(Note: Click "Tap to play" inside the window to boot the virtual emulator.)*
 
